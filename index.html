@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>PredictX — Market</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -34,6 +35,175 @@
             min-height: 100vh
         }
 
+        /* ── AUTH OVERLAY ── */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .auth-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px;
+            width: 360px;
+            max-width: 94vw;
+            box-shadow: 0 0 60px rgba(0,217,100,.06)
+        }
+
+        .auth-logo {
+            font-family: 'Space Mono',monospace;
+            font-size: 12px;
+            letter-spacing: 3px;
+            color: var(--green);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .auth-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+            0%,100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        .auth-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .auth-sub {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            margin-bottom: 24px
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 20px;
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 3px
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 7px;
+            text-align: center;
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all .15s
+        }
+
+            .auth-tab.active {
+                background: var(--surface);
+                color: var(--green);
+                box-shadow: 0 1px 4px rgba(0,0,0,.3)
+            }
+
+        .afield {
+            margin-bottom: 14px
+        }
+
+            .afield label {
+                display: block;
+                font-size: 11px;
+                color: var(--muted);
+                margin-bottom: 5px;
+                font-family: 'Space Mono',monospace;
+                letter-spacing: .5px
+            }
+
+            .afield input {
+                width: 100%;
+                padding: 11px 14px;
+                background: var(--surface2);
+                border: 1px solid var(--border2);
+                border-radius: 10px;
+                color: var(--text);
+                font-family: 'DM Sans',sans-serif;
+                font-size: 14px;
+                outline: none;
+                transition: border-color .2s
+            }
+
+                .afield input:focus {
+                    border-color: var(--green)
+                }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans',sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            background: var(--green);
+            color: #000;
+            transition: all .15s;
+            margin-top: 4px
+        }
+
+            .auth-btn:hover {
+                background: #00f070;
+                transform: translateY(-1px)
+            }
+
+            .auth-btn:disabled {
+                opacity: .5;
+                cursor: not-allowed;
+                transform: none
+            }
+
+        .auth-err {
+            color: var(--red);
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: var(--red-dim);
+            border-radius: 6px
+        }
+
+        .auth-bonus {
+            background: rgba(0,217,100,.06);
+            border: 1px solid rgba(0,217,100,.2);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: var(--green);
+            font-family: 'Space Mono',monospace;
+            margin-bottom: 16px
+        }
+
+        /* ── HEADER ── */
         header {
             position: sticky;
             top: 0;
@@ -45,7 +215,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 56px;
+            height: 56px
         }
 
         .logo {
@@ -66,20 +236,10 @@
             animation: pulse 2s infinite
         }
 
-        @keyframes pulse {
-            0%,100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .3
-            }
-        }
-
         .header-right {
             display: flex;
             align-items: center;
-            gap: 10px
+            gap: 8px
         }
 
         .balance-pill {
@@ -93,7 +253,7 @@
             font-family: 'Space Mono',monospace;
             font-size: 13px;
             cursor: pointer;
-            transition: border-color .2s;
+            transition: border-color .2s
         }
 
             .balance-pill:hover {
@@ -120,7 +280,7 @@
             font-family: 'Space Mono',monospace;
             cursor: pointer;
             transition: all .15s;
-            font-weight: 700;
+            font-weight: 700
         }
 
             .add-btn:hover {
@@ -128,6 +288,37 @@
                 color: #000
             }
 
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            color: var(--muted)
+        }
+
+            .user-pill .uname {
+                color: var(--text);
+                font-weight: 600
+            }
+
+        .logout-link {
+            font-size: 11px;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: 'Space Mono',monospace;
+            border: 1px solid var(--border2);
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: all .15s
+        }
+
+            .logout-link:hover {
+                color: var(--red);
+                border-color: var(--red)
+            }
+
+        /* ── TABS ── */
         .tabs {
             display: flex;
             gap: 2px;
@@ -144,7 +335,8 @@
             color: var(--muted);
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            transition: all .2s
+            transition: all .2s;
+            white-space: nowrap
         }
 
             .tab.active {
@@ -164,6 +356,7 @@
                 display: block
             }
 
+        /* ── TICKER ── */
         .ticker {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -175,6 +368,7 @@
             white-space: nowrap
         }
 
+        /* ── CONTAINER ── */
         .container {
             max-width: 680px;
             margin: 0 auto;
@@ -184,6 +378,7 @@
             gap: 14px
         }
 
+        /* ── CARD ── */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -204,24 +399,21 @@
             font-size: 15px;
             font-weight: 600;
             line-height: 1.4;
-            margin-bottom: 8px
+            margin-bottom: 6px
         }
 
         .card-creator {
             font-size: 10px;
             font-family: 'Space Mono',monospace;
             color: var(--yellow);
-            margin-bottom: 6px
+            margin-bottom: 5px
         }
 
         .card-deadline {
             font-size: 11px;
             font-family: 'Space Mono',monospace;
             color: var(--muted);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px
+            margin-bottom: 8px
         }
 
         .deadline-urgent {
@@ -230,6 +422,17 @@
 
         .deadline-soon {
             color: var(--yellow)
+        }
+
+        .locked-banner {
+            background: rgba(245,166,35,.08);
+            border: 1px solid rgba(245,166,35,.3);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            color: var(--yellow);
+            margin-bottom: 8px
         }
 
         .closed-badge {
@@ -253,20 +456,6 @@
             background: var(--red-dim);
             color: var(--red);
             border: 1px solid var(--red)
-        }
-
-        .locked-banner {
-            background: rgba(245,166,35,.08);
-            border: 1px solid rgba(245,166,35,.3);
-            border-radius: 8px;
-            padding: 7px 12px;
-            font-size: 11px;
-            font-family: 'Space Mono',monospace;
-            color: var(--yellow);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px
         }
 
         .prob-row {
@@ -327,6 +516,7 @@
             font-weight: 600
         }
 
+        /* ── CHART ── */
         .chart-wrap {
             padding: 8px 16px 4px;
             position: relative
@@ -346,7 +536,7 @@
 
         .chart-tooltip {
             position: absolute;
-            background: rgba(13,20,32,.95);
+            background: rgba(13,20,32,.97);
             border: 1px solid var(--border2);
             border-radius: 8px;
             padding: 7px 10px;
@@ -398,7 +588,7 @@
                 color: var(--green)
             }
 
-        /* MY POSITION — new detailed breakdown */
+        /* ── MY POSITION ── */
         .my-pos {
             margin: 6px 16px;
             background: var(--surface2);
@@ -406,7 +596,7 @@
             border-radius: 10px;
             padding: 10px 14px;
             font-size: 11px;
-            font-family: 'Space Mono',monospace;
+            font-family: 'Space Mono',monospace
         }
 
         .pos-title {
@@ -450,14 +640,11 @@
             color: var(--red)
         }
 
-        .pi-vol {
-            color: var(--yellow)
-        }
-
         .pi-shares {
             color: var(--blue)
         }
 
+        /* ── AMOUNT / ACTIONS ── */
         .amount-row {
             display: flex;
             gap: 6px;
@@ -492,7 +679,6 @@
         .custom-amt-wrap {
             display: flex;
             align-items: center;
-            gap: 0;
             flex: 1;
             min-width: 90px;
             max-width: 140px
@@ -573,6 +759,7 @@
             transform: none !important
         }
 
+        /* ── CHAT ── */
         .chat-wrap {
             border-top: 1px solid var(--border);
             padding: 10px 16px 12px
@@ -626,7 +813,7 @@
             color: var(--muted)
         }
 
-        /* LEADERBOARD */
+        /* ── LEADERBOARD ── */
         .lb-container {
             max-width: 680px;
             margin: 0 auto;
@@ -642,17 +829,13 @@
 
         .lb-header {
             padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between
+            border-bottom: 1px solid var(--border)
         }
 
         .lb-title {
             font-family: 'Space Mono',monospace;
             font-size: 13px;
-            letter-spacing: 2px;
-            color: var(--text)
+            letter-spacing: 2px
         }
 
         .lb-subtitle {
@@ -663,7 +846,7 @@
 
         .lb-row {
             display: grid;
-            grid-template-columns: 36px 1fr 90px 80px 80px;
+            grid-template-columns: 36px 1fr 100px 80px 90px;
             align-items: center;
             padding: 12px 20px;
             border-bottom: 1px solid var(--border);
@@ -735,49 +918,84 @@
         .lb-col-header {
             font-size: 10px;
             color: var(--muted);
-            letter-spacing: .5px
+            letter-spacing: .5px;
+            text-align: right
         }
 
         .lb-col-header-row {
             display: grid;
-            grid-template-columns: 36px 1fr 90px 80px 80px;
+            grid-template-columns: 36px 1fr 100px 80px 90px;
             padding: 8px 20px;
             gap: 8px;
             border-bottom: 1px solid var(--border);
             background: var(--surface2)
         }
 
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--muted);
-            font-family: 'Space Mono',monospace;
-            font-size: 12px
+        /* ── MY MARKETS TAB ── */
+        .my-markets-wrap {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px
         }
 
-        .notif {
-            position: fixed;
-            top: 68px;
-            right: 16px;
-            background: var(--green);
-            color: #000;
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            transform: translateY(-6px);
-            opacity: 0;
-            transition: all .3s;
-            pointer-events: none;
-            z-index: 200
+        .create-market-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px
         }
 
-            .notif.show {
-                transform: translateY(0);
-                opacity: 1
+            .create-market-card h2 {
+                font-family: 'Space Mono',monospace;
+                font-size: 12px;
+                color: var(--muted);
+                letter-spacing: 1.5px;
+                margin-bottom: 6px
             }
 
-        /* ── MODALS ── */
+            .create-market-card p {
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 16px
+            }
+
+        .fee-note {
+            background: rgba(245,166,35,.07);
+            border: 1px solid rgba(245,166,35,.25);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: var(--yellow);
+            font-family: 'Space Mono',monospace;
+            margin-bottom: 14px;
+            line-height: 1.6
+        }
+
+        .mm-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .mm-q {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px
+        }
+
+        .mm-stats {
+            display: flex;
+            gap: 14px;
+            font-family: 'Space Mono',monospace;
+            font-size: 11px;
+            color: var(--muted)
+        }
+
+        /* ── MODAL ── */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -789,7 +1007,7 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity .25s;
+            transition: opacity .25s
         }
 
             .modal-overlay.open {
@@ -802,10 +1020,11 @@
             border: 1px solid var(--border2);
             border-radius: 20px;
             padding: 28px;
-            width: 360px;
+            width: 380px;
             max-width: 94vw;
             transform: translateY(12px);
             transition: transform .25s;
+            position: relative
         }
 
         .modal-overlay.open .modal {
@@ -822,7 +1041,7 @@
         .modal-sub {
             font-size: 12px;
             color: var(--muted);
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             font-family: 'Space Mono',monospace
         }
 
@@ -922,12 +1141,17 @@
             margin-top: 4px
         }
 
+            .mbtn:disabled {
+                opacity: .5;
+                cursor: not-allowed
+            }
+
         .mbtn-blue {
             background: var(--blue);
             color: #fff
         }
 
-            .mbtn-blue:hover {
+            .mbtn-blue:hover:not(:disabled) {
                 background: #2563eb
             }
 
@@ -936,7 +1160,7 @@
             color: #000
         }
 
-            .mbtn-green:hover {
+            .mbtn-green:hover:not(:disabled) {
                 background: #00b852
             }
 
@@ -951,25 +1175,6 @@
                 border-color: var(--red);
                 color: var(--red)
             }
-        /* card input flair */
-        .card-number-wrap {
-            position: relative
-        }
-
-            .card-number-wrap input {
-                padding-right: 50px;
-                font-family: 'Space Mono',monospace;
-                letter-spacing: 2px
-            }
-
-        .card-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            pointer-events: none
-        }
 
         .amounts-grid {
             display: grid;
@@ -992,16 +1197,30 @@
             transition: all .15s
         }
 
-            .amt-pill:hover {
-                border-color: var(--green);
-                color: var(--green)
-            }
-
-            .amt-pill.sel {
+            .amt-pill:hover, .amt-pill.sel {
                 border-color: var(--green);
                 color: var(--green);
                 background: var(--green-dim)
             }
+
+        .card-number-wrap {
+            position: relative
+        }
+
+            .card-number-wrap input {
+                padding-right: 50px;
+                font-family: 'Space Mono',monospace;
+                letter-spacing: 2px
+            }
+
+        .card-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            pointer-events: none
+        }
 
         .security-note {
             display: flex;
@@ -1012,45 +1231,167 @@
             font-family: 'Space Mono',monospace;
             margin-top: 10px
         }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1
+        }
+
+            .modal-close:hover {
+                color: var(--text)
+            }
+
+        /* ── MISC ── */
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            font-size: 12px
+        }
+
+        .notif {
+            position: fixed;
+            top: 68px;
+            right: 16px;
+            background: var(--green);
+            color: #000;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transform: translateY(-6px);
+            opacity: 0;
+            transition: all .3s;
+            pointer-events: none;
+            z-index: 600
+        }
+
+            .notif.show {
+                transform: translateY(0);
+                opacity: 1
+            }
+
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px
+        }
+
+            .loading-screen .spin {
+                width: 32px;
+                height: 32px;
+                border: 3px solid var(--border2);
+                border-top-color: var(--green);
+                border-radius: 50%;
+                animation: spin .8s linear infinite
+            }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .loading-screen p {
+            font-family: 'Space Mono',monospace;
+            font-size: 12px;
+            color: var(--muted)
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo"><div class="logo-dot"></div>PREDICTX</div>
-        <div class="header-right">
-            <button class="add-btn" onclick="openPayModal()">+ Dobít</button>
-            <div class="balance-pill" onclick="openPayModal()">
-                <span class="lbl">BALANCE</span>
-                <span class="amt" id="bal">1000.00</span>
-                <span style="color:var(--muted);font-size:11px">$</span>
+
+    <!-- LOADING -->
+    <div class="loading-screen" id="loading">
+        <div class="spin"></div>
+        <p>Připojuji se...</p>
+    </div>
+
+    <!-- AUTH OVERLAY -->
+    <div class="auth-overlay" id="auth-overlay" style="display:none">
+        <div class="auth-box">
+            <div class="auth-logo"><div class="auth-dot"></div>PREDICTX</div>
+            <div class="auth-title">Vítej zpět</div>
+            <div class="auth-sub">Prediction markets · Real stakes</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="authSwitch('login')">Přihlásit</div>
+                <div class="auth-tab" onclick="authSwitch('register')">Registrovat</div>
             </div>
+            <div id="auth-bonus" class="auth-bonus" style="display:none">🎁 Nový účet dostane $1 000 na start!</div>
+            <div id="auth-login">
+                <div class="afield"><label>Email</label><input id="l-email" type="email" placeholder="jan@example.com" autocomplete="email"></div>
+                <div class="afield"><label>Heslo</label><input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+                <button class="auth-btn" id="l-btn" onclick="doLogin()">Přihlásit se →</button>
+            </div>
+            <div id="auth-register" style="display:none">
+                <div class="afield"><label>Uživatelské jméno</label><input id="r-name" type="text" placeholder="crypto_wizard" autocomplete="username"></div>
+                <div class="afield"><label>Email</label><input id="r-email" type="email" placeholder="jan@example.com" autocomplete="email"></div>
+                <div class="afield"><label>Heslo</label><input id="r-pass" type="password" placeholder="min. 6 znaků" autocomplete="new-password"></div>
+                <button class="auth-btn" id="r-btn" onclick="doRegister()">Vytvořit účet →</button>
+            </div>
+            <div class="auth-err" id="auth-err"></div>
         </div>
-    </header>
-
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('markets')">⬤ MARKETS</div>
-        <div class="tab" onclick="switchTab('mymarkets')">🏗 MÉ TRHY</div>
-        <div class="tab" onclick="switchTab('leaderboard')">🏆 LEADERBOARD</div>
     </div>
 
-    <div id="tab-markets" class="tab-content active">
-        <div class="ticker" id="ticker">⬤ LIVE — loading...</div>
-        <div class="container" id="markets"></div>
-    </div>
-    <div id="tab-mymarkets" class="tab-content">
-        <div class="container" style="padding-top:20px">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
-                <div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;margin-bottom:4px">VYTVOŘ VLASTNÍ TRH</div>
-                <div style="font-size:14px;font-weight:600;margin-bottom:16px">Zaplať 10 000 $ a stvoř svůj predikční trh. Dostaneš 10 % ze všech investic.</div>
-                <div id="create-market-btn-wrap">
-                    <button class="mbtn mbtn-green" onclick="openCreateMarket()" style="max-width:300px">🏗 Vytvořit trh za 10 000 $</button>
+    <!-- MAIN APP -->
+    <div id="app" style="display:none">
+        <header>
+            <div class="logo"><div class="logo-dot"></div>PREDICTX</div>
+            <div class="header-right">
+                <button class="add-btn" onclick="openModal('pay-modal')">+ Dobít</button>
+                <div class="balance-pill" onclick="openModal('pay-modal')">
+                    <span class="lbl">BALANCE</span>
+                    <span class="amt" id="bal">0.00</span>
+                    <span style="color:var(--muted);font-size:11px">$</span>
                 </div>
+                <div class="user-pill">
+                    <span>👤</span>
+                    <span class="uname" id="header-username">—</span>
+                </div>
+                <span class="logout-link" onclick="doLogout()">Odhlásit</span>
             </div>
-            <div id="my-markets-list"></div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('markets')">⬤ MARKETS</div>
+            <div class="tab" onclick="switchTab('mymarkets')">🏗 MÉ TRHY</div>
+            <div class="tab" onclick="switchTab('leaderboard')">🏆 LEADERBOARD</div>
         </div>
-    </div>
-    <div id="tab-leaderboard" class="tab-content">
-        <div class="lb-container" id="lb-container"></div>
+
+        <div id="tab-markets" class="tab-content active">
+            <div class="ticker" id="ticker">⬤ LIVE — loading...</div>
+            <div class="container" id="markets"></div>
+        </div>
+
+        <div id="tab-mymarkets" class="tab-content">
+            <div class="my-markets-wrap">
+                <div class="create-market-card">
+                    <h2>VYTVOŘ VLASTNÍ TRH</h2>
+                    <p>Zaplať $10 000 a spusť vlastní predikční trh. Dostaneš 10 % ze všech sázek.</p>
+                    <div class="fee-note">💰 Poplatek: $10 000 · 10 % z každé sázky jde tobě · výplata při uzavření trhu</div>
+                    <button class="mbtn mbtn-green" style="max-width:280px" onclick="openModal('create-market-modal')">🏗 Vytvořit trh za $10 000 →</button>
+                </div>
+                <div id="my-markets-list"></div>
+            </div>
+        </div>
+
+        <div id="tab-leaderboard" class="tab-content">
+            <div class="lb-container" id="lb-container"></div>
+        </div>
     </div>
 
     <div class="notif" id="notif"></div>
@@ -1058,745 +1399,823 @@
     <!-- PAYMENT MODAL -->
     <div class="modal-overlay" id="pay-modal">
         <div class="modal">
-            <div class="modal-title">💳 DOBÍT KREDIT</div>
-            <div class="modal-sub">Bezpečná platba · PredictX Finance</div>
-            <div class="amounts-grid">
-                <div class="amt-pill" data-v="500" onclick="selTopup(500)">$500</div>
-                <div class="amt-pill sel" data-v="1000" onclick="selTopup(1000)">$1K</div>
-                <div class="amt-pill" data-v="5000" onclick="selTopup(5000)">$5K</div>
-                <div class="amt-pill" data-v="10000" onclick="selTopup(10000)">$10K</div>
-            </div>
-            <div class="mfield">
-                <label>Vlastní částka ($)</label>
-                <input id="topup-custom" type="number" min="1" placeholder="Zadej částku" oninput="selTopupCustom()">
-            </div>
-            <div class="mfield">
-                <label>Jméno na kartě</label>
-                <input id="card-name" type="text" placeholder="Jan Novák" autocomplete="cc-name">
-            </div>
-            <div class="mfield">
-                <label>Číslo karty</label>
-                <div class="card-number-wrap">
-                    <input id="card-num" type="text" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number" oninput="formatCard(this)">
-                    <span class="card-icon" id="card-icon">💳</span>
-                </div>
-            </div>
-            <div class="card-row">
-                <div class="mfield">
-                    <label>Platnost (MM/YY)</label>
-                    <input id="card-exp" type="text" placeholder="08/27" maxlength="5" oninput="formatExp(this)" autocomplete="cc-exp">
+            <button class="modal-close" onclick="closeModal('pay-modal')">✕</button>
+            <div id="pay-form">
+                <div class="modal-title">💳 DOBÍT KREDIT</div>
+                <div class="modal-sub">Bezpečná platba · PredictX Finance</div>
+                <div class="amounts-grid">
+                    <div class="amt-pill" data-v="500" onclick="selTopup(500)">$500</div>
+                    <div class="amt-pill sel" data-v="1000" onclick="selTopup(1000)">$1K</div>
+                    <div class="amt-pill" data-v="5000" onclick="selTopup(5000)">$5K</div>
+                    <div class="amt-pill" data-v="10000" onclick="selTopup(10000)">$10K</div>
                 </div>
                 <div class="mfield">
-                    <label>CVV</label>
-                    <input id="card-cvv" type="text" placeholder="123" maxlength="4" autocomplete="cc-csc">
+                    <label>Vlastní částka ($)</label>
+                    <input id="topup-custom" type="number" min="1" placeholder="Zadej částku" oninput="selTopupCustom()">
                 </div>
+                <div class="mfield"><label>Jméno na kartě</label><input id="card-name" type="text" placeholder="Jan Novák" autocomplete="cc-name"></div>
+                <div class="mfield">
+                    <label>Číslo karty</label>
+                    <div class="card-number-wrap">
+                        <input id="card-num" type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" autocomplete="cc-number">
+                        <span class="card-icon" id="card-icon">💳</span>
+                    </div>
+                </div>
+                <div class="card-row">
+                    <div class="mfield"><label>Platnost (MM/YY)</label><input id="card-exp" type="text" placeholder="08/27" maxlength="5" oninput="formatExp(this)" autocomplete="cc-exp"></div>
+                    <div class="mfield"><label>CVV</label><input id="card-cvv" type="text" placeholder="123" maxlength="4" autocomplete="cc-csc"></div>
+                </div>
+                <div class="security-note">🔒 256-bit SSL · PCI DSS compliant</div>
+                <button class="mbtn mbtn-blue" id="pay-btn" onclick="doTopup()" style="margin-top:14px">Zaplatit a dobít kredit →</button>
+                <button class="mbtn mbtn-cancel" onclick="closeModal('pay-modal')">Zrušit</button>
             </div>
-            <div class="security-note">🔒 Šifrováno 256-bit SSL · PCI DSS compliant</div>
-            <button class="mbtn mbtn-blue" onclick="doTopup()" style="margin-top:16px">Zaplatit a dobít kredit →</button>
-            <button class="mbtn mbtn-cancel" onclick="closeModal('pay-modal')">Zrušit</button>
+            <div id="pay-success" style="display:none;text-align:center;padding:10px 0">
+                <div style="font-size:40px;margin-bottom:12px">✅</div>
+                <div style="font-family:'Space Mono',monospace;font-size:14px;color:var(--green);margin-bottom:6px">Dobito!</div>
+                <div style="font-size:13px;color:var(--muted)" id="pay-success-msg"></div>
+                <button class="mbtn mbtn-green" style="margin-top:16px" onclick="closeModal('pay-modal')">Pokračovat →</button>
+            </div>
         </div>
     </div>
 
     <!-- CREATE MARKET MODAL -->
     <div class="modal-overlay" id="create-market-modal">
         <div class="modal">
+            <button class="modal-close" onclick="closeModal('create-market-modal')">✕</button>
             <div class="modal-title">🏗 NOVÝ TRH</div>
-            <div class="modal-sub">Poplatek 10 000 $ · 10 % z objemu pro tebe</div>
+            <div class="modal-sub">Poplatek $10 000 · 10 % z objemu pro tebe</div>
             <div class="modal-cost">
                 <div class="mc-label">CENA VYTVOŘENÍ</div>
-                <div class="mc-val">10 000 $</div>
+                <div class="mc-val">$10 000</div>
                 <div class="mc-note">Dostaneš 10 % ze všech vsazených peněz</div>
             </div>
-            <div class="mfield">
-                <label>Otázka trhu</label>
-                <textarea id="cm-q" placeholder="Např: Bude česká koruna pod 24 CZK/USD v Q1 2026?"></textarea>
-            </div>
+            <div class="mfield"><label>Otázka trhu</label><textarea id="cm-q" placeholder="Např: Bude česká koruna pod 24 CZK/USD v Q1 2026?"></textarea></div>
             <div class="mfield">
                 <label>Deadline (nepovinné)</label>
                 <input id="cm-deadline" type="datetime-local">
                 <div class="modal-hint">Po deadlinu bude sázení uzavřeno</div>
             </div>
             <div class="card-row">
-                <div class="mfield">
-                    <label>Start YES pool ($)</label>
-                    <input id="cm-yes" type="number" value="100" min="0">
-                </div>
-                <div class="mfield">
-                    <label>Start NO pool ($)</label>
-                    <input id="cm-no" type="number" value="100" min="0">
-                </div>
+                <div class="mfield"><label>Start YES pool ($)</label><input id="cm-yes" type="number" value="100" min="0"></div>
+                <div class="mfield"><label>Start NO pool ($)</label><input id="cm-no" type="number" value="100" min="0"></div>
             </div>
-            <button class="mbtn mbtn-green" onclick="doCreateMarket()">Vytvořit trh za 10 000 $ →</button>
+            <button class="mbtn mbtn-green" id="cm-btn" onclick="doCreateMarket()">Vytvořit trh za $10 000 →</button>
             <button class="mbtn mbtn-cancel" onclick="closeModal('create-market-modal')">Zrušit</button>
         </div>
     </div>
 
     <script>
-        const load = () => JSON.parse(localStorage.getItem("markets") || "[]");
-        const save = m => localStorage.setItem("markets", JSON.stringify(m));
-        const loadLB = () => JSON.parse(localStorage.getItem("leaderboard") || "[]");
-        const saveLB = l => localStorage.setItem("leaderboard", JSON.stringify(l));
+        // ══════════════════════════════════════════════════════════
+        // 🔧 NASTAVENÍ — vyplň svoje Supabase údaje
+        // ══════════════════════════════════════════════════════════
+        const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co'   // např. https://abcxyz.supabase.co
+        const SUPABASE_KEY = 'sb_publishable_f80fIU8XbRkuchD18srPNA_EcbbcB0f'        // Project Settings → API → anon public
+        // ══════════════════════════════════════════════════════════
 
-        let balance = Number(localStorage.getItem("bal") || 1000);
-        let portfolio = JSON.parse(localStorage.getItem("portfolio") || "{}");
-        let selectedAmt = {};
-        let selectedPeriod = {};
-        let markets = load();
-        let renderedIds = [];
-        let topupAmount = 1000;
-        const MY_NAME = localStorage.getItem("myName") || "Ty";
-        const AMOUNTS = [5, 10, 25, 50];
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-        function saveUser() {
-            localStorage.setItem("bal", balance.toFixed(4));
-            localStorage.setItem("portfolio", JSON.stringify(portfolio));
-        }
+        let currentUser = null
+        let currentProfile = null
+        let markets = []
+        let myBets = {}          // { market_id: { yes_inv, no_inv, yes_shares, no_shares } }
+        let selectedAmt = {}
+        let selectedPeriod = {}
+        let renderedIds = []
+        let topupAmount = 1000
+        const AMOUNTS = [5, 10, 25, 50]
 
-        function updateBalDisplay() {
-            document.getElementById("bal").textContent = balance.toFixed(2);
-        }
-
-        /* ── TABS ── */
-        function switchTab(t) {
-            document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['markets', 'mymarkets', 'leaderboard'][i] === t));
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + t).classList.add('active');
-            if (t === 'leaderboard') renderLeaderboard();
-            if (t === 'mymarkets') renderMyMarkets();
-        }
-
-        /* ── MODALS ── */
-        function openPayModal() { document.getElementById('pay-modal').classList.add('open') }
-        function openCreateMarket() { document.getElementById('create-market-modal').classList.add('open') }
-        function closeModal(id) { document.getElementById(id).classList.remove('open') }
-
-        document.querySelectorAll('.modal-overlay').forEach(el => {
-            el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open') });
-        });
-
-        /* ── TOPUP ── */
-        function selTopup(v) {
-            topupAmount = v;
-            document.querySelectorAll('.amt-pill').forEach(el => el.classList.toggle('sel', Number(el.dataset.v) === v));
-            document.getElementById('topup-custom').value = '';
-        }
-        function selTopupCustom() {
-            let v = Number(document.getElementById('topup-custom').value);
-            if (v > 0) {
-                topupAmount = v;
-                document.querySelectorAll('.amt-pill').forEach(el => el.classList.remove('sel'));
-            }
-        }
-        function formatCard(inp) {
-            let v = inp.value.replace(/\D/g, '').substring(0, 16);
-            inp.value = v.replace(/(\d{4})/g, '$1 ').trim();
-            let icon = document.getElementById('card-icon');
-            if (v.startsWith('4')) icon.textContent = '💳';
-            else if (v.startsWith('5')) icon.textContent = '🏦';
-            else if (v.startsWith('3')) icon.textContent = '🟩';
-            else icon.textContent = '💳';
-        }
-        function formatExp(inp) {
-            let v = inp.value.replace(/\D/g, '');
-            if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2);
-            inp.value = v;
-        }
-        function doTopup() {
-            let name = document.getElementById('card-name').value.trim();
-            let num = document.getElementById('card-num').value.replace(/\s/g, '');
-            let exp = document.getElementById('card-exp').value.trim();
-            let cvv = document.getElementById('card-cvv').value.trim();
-            if (!name || num.length < 15 || num.length > 16 || !exp.match(/^\d{2}\/\d{2}$/) || cvv.length < 3) {
-                notify('⚠️ Vyplň správně všechny údaje!'); return;
-            }
-            let amt = topupAmount;
-            if (!amt || amt <= 0) { notify('⚠️ Zadej platnou částku!'); return; }
-            // Simulate processing
-            let btn = event.target;
-            btn.textContent = '⏳ Zpracovávám...';
-            btn.disabled = true;
-            setTimeout(() => {
-                balance += amt;
-                saveUser();
-                updateBalDisplay();
-                updateLBBalance();
-                closeModal('pay-modal');
-                btn.textContent = 'Zaplatit a dobít kredit →';
-                btn.disabled = false;
-                notify(`✅ Dobito $${amt.toLocaleString()}! Nový zůstatek: $${balance.toFixed(2)}`);
-            }, 1800);
-        }
-
-        /* ── CREATE USER MARKET ── */
-        function doCreateMarket() {
-            if (balance < 10000) { notify('⚠️ Nemáš dost prostředků! Potřebuješ $10 000'); return; }
-            let q = document.getElementById('cm-q').value.trim();
-            if (!q) { notify('⚠️ Zadej otázku!'); return; }
-            let sy = Number(document.getElementById('cm-yes').value) || 100;
-            let sn = Number(document.getElementById('cm-no').value) || 100;
-            let dlVal = document.getElementById('cm-deadline').value;
-            let deadline = dlVal ? new Date(dlVal).getTime() : null;
-            balance -= 10000;
-            saveUser();
-            updateBalDisplay();
-            let m = load();
-            m.push({
-                id: Date.now(), q, yes: sy, no: sn,
-                p: sy / (sy + sn),
-                hist: [{ p: sy / (sy + sn), yes: sy, no: sn, t: Date.now() }],
-                chat: [], closed: false, result: null,
-                deadline: deadline, createdAt: Date.now(),
-                creatorName: MY_NAME, creatorFee: 0
-            });
-            save(m); markets = m;
-            closeModal('create-market-modal');
-            document.getElementById('cm-q').value = '';
-            notify('🏗 Tvůj trh byl vytvořen! Dostaneš 10 % z každé sázky.');
-            switchTab('markets');
-            fullRender();
-        }
-
-        /* ── MY MARKETS LIST ── */
-        function renderMyMarkets() {
-            let m = load().filter(x => x.creatorName === MY_NAME);
-            let el = document.getElementById('my-markets-list');
-            if (!m.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-family:Space Mono,monospace;font-size:12px">Zatím žádné tvoje trhy</div>'; return; }
-            el.innerHTML = m.map(x => {
-                let vol = (x.yes || 0) + (x.no || 0);
-                let fee = x.creatorFee || 0;
-                return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px">
-                        <div style="font-size:13px;font-weight:600;margin-bottom:6px">${x.q}</div>
-                        <div style="display:flex;gap:14px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">
-                            <span>OBJEM: <span style="color:var(--yellow)">$${vol.toFixed(0)}</span></span>
-                            <span>POPLATKY: <span style="color:var(--green)">$${fee.toFixed(2)}</span></span>
-                            <span>STATUS: <span style="color:${x.closed ? 'var(--muted)' : 'var(--green)'}">${x.closed ? 'UZAVŘENO' : 'AKTIVNÍ'}</span></span>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        /* ── AMOUNT ── */
-        function getAmt(id) {
-            let custom = document.getElementById('custom-' + id);
-            if (custom && custom.value && Number(custom.value) > 0) return Number(custom.value);
-            return selectedAmt[id] || 10;
-        }
-        window.setAmt = function (id, v) {
-            selectedAmt[id] = v;
-            document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.toggle("active", Number(b.dataset.v) === v));
-            let ci = document.getElementById('custom-' + id);
-            if (ci) ci.value = '';
-            updateBetBtns(id, v);
-        };
-        window.customAmtChange = function (id) {
-            let ci = document.getElementById('custom-' + id);
-            let v = Number(ci.value);
-            if (v > 0) {
-                document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.remove("active"));
-                updateBetBtns(id, v);
-            }
-        };
-        function updateBetBtns(id, v) {
-            let by = document.getElementById(`btn-yes-${id}`);
-            let bn = document.getElementById(`btn-no-${id}`);
-            if (by) by.textContent = `↑ YES $${v}`;
-            if (bn) bn.textContent = `↓ NO $${v}`;
-        }
-
-        /* ── BET ── */
-        function getPrice(m, type) {
-            let t = m.yes + m.no, p = t ? m.yes / t : 0.5;
-            return type === "yes" ? p : 1 - p;
-        }
-
-        window.bet = function (id, type) {
-            let m = load(), x = m.find(a => a.id == id);
-            if (!x || x.closed) return;
-            // Check deadline lock
-            if (x.deadline && Date.now() > x.deadline) { notify('⏱ Deadline vypršel — sázení uzavřeno!'); return; }
-            let invest = getAmt(id);
-            if (!invest || invest <= 0) { notify("Zadej platnou částku! 💸"); return; }
-            if (balance < invest) { notify("Nedostatek peněz! 💸"); return; }
-            let price = getPrice(x, type);
-            let shares = invest / Math.max(price, 0.01);
-            balance -= invest;
-            if (!portfolio[id]) portfolio[id] = { yes: 0, no: 0, yesInvested: 0, noInvested: 0 };
-            portfolio[id][type] += shares;
-            portfolio[id][type + "Invested"] = (portfolio[id][type + "Invested"] || 0) + invest;
-            if (type === "yes") x.yes += invest; else x.no += invest;
-            let t = x.yes + x.no; x.p = t ? x.yes / t : 0.5;
-            pushHist(x);
-            // Creator fee
-            if (x.creatorName && x.creatorName !== MY_NAME) {
-                let fee = invest * 0.1;
-                x.creatorFee = (x.creatorFee || 0) + fee;
-                // Add to creator in leaderboard
-                let lb = loadLB();
-                let creator = lb.find(e => e.name === x.creatorName);
-                if (creator) { creator.balance = (creator.balance || 0) + fee; saveLB(lb); }
-            }
-            if (!x.chat) x.chat = [];
-            x.chat.push({ name: "Ty", color: "var(--yellow)", text: `koupil ${type.toUpperCase()} za $${invest} @ ${(price * 100).toFixed(1)}%` });
-            if (x.chat.length > 40) x.chat.shift();
-            save(m); markets = m; saveUser();
-            updateLeaderboard(MY_NAME, balance, invest, type);
-            notify(`+${shares.toFixed(2)} ${type.toUpperCase()} shares @ $${price.toFixed(3)}`);
-            updateCard(x);
-            updateBalDisplay();
-        };
-
-        /* ── LEADERBOARD ── */
-        function updateLeaderboard(name, bal, invested, type) {
-            let lb = loadLB();
-            let entry = lb.find(e => e.name === name);
-            if (!entry) { entry = { name, isMe: true, balance: bal, bets: 0, profit: 0 }; lb.push(entry); }
-            entry.balance = bal;
-            entry.bets = (entry.bets || 0) + 1;
-            saveLB(lb);
-        }
-        function updateLBBalance() {
-            let lb = loadLB();
-            let me = lb.find(e => e.isMe);
-            if (me) { me.balance = balance; saveLB(lb); }
-        }
-
-        function renderLeaderboard() {
-            let lb = loadLB();
-            let me = lb.find(e => e.isMe);
-            if (!me) { lb.push({ name: MY_NAME, isMe: true, balance: balance, bets: 0 }); saveLB(lb); }
-            else { me.balance = balance; saveLB(lb); }
-            let sorted = [...lb].sort((a, b) => b.balance - a.balance);
-            let cont = document.getElementById('lb-container');
-            if (!sorted.length) { cont.innerHTML = '<div class="empty">Zatím žádní hráči</div>'; return; }
-            let html = `<div class="lb-card">
-                    <div class="lb-header">
-                        <div><div class="lb-title">LEADERBOARD</div><div class="lb-subtitle">${sorted.length} traders · live</div></div>
-                    </div>
-                    <div class="lb-col-header-row">
-                        <div class="lb-col-header">#</div>
-                        <div class="lb-col-header">TRADER</div>
-                        <div class="lb-col-header" style="text-align:right">BALANCE</div>
-                        <div class="lb-col-header" style="text-align:right">SÁZKY</div>
-                        <div class="lb-col-header" style="text-align:right">P&L</div>
-                    </div>`;
-            sorted.forEach((e, i) => {
-                let rank = i + 1;
-                let pnl = e.balance - 1000;
-                let rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
-                html += `<div class="lb-row${e.isMe ? ' me' : ''}">
-                        <div class="lb-rank ${rankClass}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
-                        <div class="lb-name">${e.name}${e.isMe ? '<span class="you-tag">YOU</span>' : ''}</div>
-                        <div class="lb-col">$${(e.balance || 0).toFixed(2)}</div>
-                        <div class="lb-col">${e.bets || 0}</div>
-                        <div class="lb-col ${pnl >= 0 ? 'pos' : 'neg'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</div>
-                    </div>`;
-            });
-            html += `</div>`;
-            cont.innerHTML = html;
-        }
-
-        /* ── PAYOUTS ── */
-        function checkPayouts() {
-            markets.forEach(m => {
-                if (m.closed && m.result && portfolio[m.id]) {
-                    let pos = portfolio[m.id];
-                    let win = m.result === "yes" ? pos.yes : pos.no;
-                    let invested = (pos.yesInvested || 0) + (pos.noInvested || 0);
-                    balance += win;
-                    delete portfolio[m.id];
-                    if (win > 0) notify(`Výhra $${win.toFixed(2)}! profit ${(win - invested) >= 0 ? "+" : ""}${(win - invested).toFixed(2)}$ 🎉`);
-                }
-            });
-            saveUser();
-            updateLBBalance();
-        }
-
-        /* ── HISTORY ── */
-        function pushHist(m) {
-            if (!m.hist) m.hist = [];
-            m.hist.push({ p: +(m.p || 0.5).toFixed(4), yes: +(m.yes || 0).toFixed(2), no: +(m.no || 0).toFixed(2), t: Date.now() });
-            if (m.hist.length > 500) m.hist.shift();
-        }
-        function getHistSlice(hist, period) {
-            if (!hist || !hist.length) return hist || [];
-            if (period === 'all') return hist;
-            let now = Date.now();
-            let cutoffs = { h: 3600000, d: 86400000, w: 604800000, m: 2592000000 };
-            let cut = cutoffs[period] || 0;
-            let filtered = hist.filter(p => typeof p === 'object' && (now - (p.t || 0)) <= cut);
-            return filtered.length > 1 ? filtered : hist;
-        }
-
-        /* ── CHART ── */
-        function draw(canvas, rawHist, period) {
-            let hist = getHistSlice(rawHist, period || 'all');
-            let data = hist.map(h => typeof h === 'object' ? h : { p: h, yes: null, no: null, t: null });
-            if (!data || data.length < 2) return;
-            let dpr = window.devicePixelRatio || 1;
-            let w = canvas.offsetWidth || 300, h = 100;
-            canvas.width = w * dpr; canvas.height = h * dpr;
-            let ctx = canvas.getContext("2d");
-            ctx.scale(dpr, dpr);
-            ctx.clearRect(0, 0, w, h);
-            let toY = v => h - (v * h * .82 + h * .08);
-            let step = w / (data.length - 1);
-            let gradY = ctx.createLinearGradient(0, 0, 0, h);
-            gradY.addColorStop(0, "rgba(0,217,100,.18)");
-            gradY.addColorStop(1, "rgba(0,217,100,0)");
-            ctx.beginPath();
-            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(d.p)) : ctx.moveTo(0, toY(d.p)));
-            ctx.strokeStyle = "#00d964"; ctx.lineWidth = 2; ctx.stroke();
-            ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
-            ctx.fillStyle = gradY; ctx.fill();
-            ctx.beginPath();
-            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(1 - d.p)) : ctx.moveTo(0, toY(1 - d.p)));
-            ctx.strokeStyle = "#ff4466"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.setLineDash([3, 5]); ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(0, toY(.5)); ctx.lineTo(w, toY(.5)); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle = "rgba(0,217,100,.8)"; ctx.font = "9px 'Space Mono',monospace";
-            ctx.fillText("YES", (data.length - 1) * step - 24, toY(data[data.length - 1].p) - 5);
-            ctx.fillStyle = "rgba(255,68,102,.8)";
-            ctx.fillText("NO", (data.length - 1) * step - 20, toY(1 - data[data.length - 1].p) + 12);
-            canvas._chartData = data;
-            canvas._step = step;
-            canvas._toY = toY;
-        }
-        function attachTooltip(canvas) {
-            if (canvas._ttAttached) return;
-            canvas._ttAttached = true;
-            let wrap = canvas.parentElement;
-            let tt = wrap.querySelector('.chart-tooltip');
-            if (!tt) return;
-            canvas.addEventListener('mousemove', e => {
-                let data = canvas._chartData, step = canvas._step;
-                if (!data || !step) return;
-                let rect = canvas.getBoundingClientRect();
-                let x = e.clientX - rect.left;
-                let idx = Math.min(Math.round(x / step), data.length - 1);
-                let d = data[idx];
-                if (!d) return;
-                tt.style.display = 'block';
-                let left = idx * step;
-                tt.style.left = Math.min(Math.max(left, 50), rect.width - 50) + 'px';
-                tt.style.top = '4px';
-                let timeStr = d.t ? new Date(d.t).toLocaleTimeString('cs', { hour: '2-digit', minute: '2-digit' }) : '—';
-                tt.innerHTML = `<div class="tt-time">${timeStr}</div><div class="tt-yes">YES ${(d.p * 100).toFixed(1)}%${d.yes != null ? ' ($' + d.yes.toFixed(1) + ')' : ''}</div><div class="tt-no">NO ${((1 - d.p) * 100).toFixed(1)}%${d.no != null ? ' ($' + d.no.toFixed(1) + ')' : ''}</div>`;
-            });
-            canvas.addEventListener('mouseleave', () => { tt.style.display = 'none'; });
-        }
-
-        /* ── BOTS ── */
+        // ── BOTS (jen pro chat simulaci na frontendu) ──
         const BOTS = [
             { name: "0xWolf", color: "#f5a623" }, { name: "TraderX", color: "#3b82f6" },
             { name: "CryptoKid", color: "#a78bfa" }, { name: "Speculator", color: "#fb7185" },
             { name: "Anon42", color: "#22d3ee" }, { name: "AlphaHunter", color: "#4ade80" },
             { name: "DegenKing", color: "#f97316" }, { name: "QuantBot", color: "#e879f9" },
             { name: "MarketMkr", color: "#60a5fa" }, { name: "YoloTrader", color: "#fbbf24" },
-            { name: "hodlgang", color: "#34d399" }, { name: "bearmode_", color: "#f87171" },
-        ];
-        const BOT_NAMES = BOTS.map(b => b.name);
-        const BULLISH = ["bullish 📈", "easy YES", "no brainer", "priced too low", "buying more rn", "free money", "YES gang rise up", "underpriced imo", "to the moon", "easy money"];
-        const BEARISH = ["overpriced af", "no way this hits", "bearish", "all in on NO", "priced too high", "gonna dump hard", "easy NO", "fade this", "NO is free money"];
-        const NEUTRAL = ["interesting bet", "waiting for data", "playing both sides", "neutral for now", "watching closely", "could go either way", "tough call"];
-        const TRADE_YES = ["just bought more YES", "YESYESYES", "going YES", "ez YES", "YES @ this price is value"];
-        const TRADE_NO = ["bought NO just now", "nah fuck this", "hell NO", "going NO here", "sold YES bought NO"];
+        ]
+        const BULLISH = ["bullish 📈", "easy YES", "no brainer", "priced too low", "buying more rn", "YES gang"]
+        const BEARISH = ["overpriced af", "no way this hits", "bearish", "all in on NO", "gonna dump"]
+        const NEUTRAL = ["interesting bet", "playing both sides", "watching closely", "could go either way"]
 
-        function getChatLine(m) {
-            let p = m.p || 0.5, r = Math.random();
-            if (r < 0.15) return TRADE_YES[Math.floor(Math.random() * TRADE_YES.length)];
-            if (r < 0.28) return TRADE_NO[Math.floor(Math.random() * TRADE_NO.length)];
-            let bias = p + ((Math.random() - .5) * .45);
-            if (bias > 0.58) return BULLISH[Math.floor(Math.random() * BULLISH.length)];
-            if (bias < 0.42) return BEARISH[Math.floor(Math.random() * BEARISH.length)];
-            return NEUTRAL[Math.floor(Math.random() * NEUTRAL.length)];
+        // ══════════════════════════════════════════════════════════
+        // AUTH
+        // ══════════════════════════════════════════════════════════
+        async function init() {
+            const { data: { session } } = await sb.auth.getSession()
+            if (session) {
+                await loadUserProfile(session.user)
+                showApp()
+            } else {
+                showAuth()
+            }
+            document.getElementById('loading').style.display = 'none'
+
+            sb.auth.onAuthStateChange(async (_event, session) => {
+                if (session) {
+                    await loadUserProfile(session.user)
+                    showApp()
+                } else {
+                    currentUser = null; currentProfile = null
+                    showAuth()
+                }
+            })
         }
 
-        function simulate() {
-            markets.forEach(m => {
-                if (m.closed) return;
-                // Don't simulate bets on expired markets
-                let isExpired = m.deadline && Date.now() > m.deadline;
-                if (!isExpired) {
-                    let n = Math.floor(Math.random() * 3) + 1;
-                    for (let i = 0; i < n; i++) {
-                        let invest = Math.pow(Math.random(), 1.5) * 30 + 1;
-                        let p = m.p || 0.5;
-                        let bias = p * 0.6 + 0.5 * 0.4 + (Math.random() - .5) * .5;
-                        if (bias > 0.5) m.yes += invest; else m.no += invest;
-                        // Creator fee from bots
-                        if (m.creatorName) {
-                            m.creatorFee = (m.creatorFee || 0) + invest * 0.1;
-                        }
-                    }
-                    let t = m.yes + m.no; m.p = t ? m.yes / t : 0.5;
-                    pushHist(m);
-                }
-                if (Math.random() < 0.55) {
-                    let bot = BOTS[Math.floor(Math.random() * BOTS.length)];
-                    let text = getChatLine(m);
-                    if (!m.chat) m.chat = [];
-                    let last = m.chat[m.chat.length - 1];
-                    if (!last || last.name !== bot.name || last.text !== text) {
-                        m.chat.push({ name: bot.name, color: bot.color, text });
-                        if (m.chat.length > 40) m.chat.shift();
-                    }
-                }
-                if (Math.random() < 0.08) {
-                    let lb = loadLB();
-                    let botName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-                    let entry = lb.find(e => e.name === botName);
-                    if (!entry) { entry = { name: botName, isMe: false, balance: 800 + Math.random() * 800, bets: 0 }; lb.push(entry); }
-                    entry.balance = Math.max(10, entry.balance + (Math.random() - .45) * 20);
-                    entry.bets = (entry.bets || 0) + 1;
-                    saveLB(lb);
-                }
-            });
+        async function loadUserProfile(user) {
+            currentUser = user
+            let { data } = await sb.from('profiles').select('*').eq('id', user.id).single()
+            currentProfile = data
+            document.getElementById('bal').textContent = (data?.balance || 0).toFixed(2)
+            document.getElementById('header-username').textContent = data?.username || '—'
         }
 
-        /* ── DEADLINE ── */
+        function showApp() {
+            document.getElementById('auth-overlay').style.display = 'none'
+            document.getElementById('app').style.display = 'block'
+            startApp()
+        }
+        function showAuth() {
+            document.getElementById('auth-overlay').style.display = 'flex'
+            document.getElementById('app').style.display = 'none'
+        }
+
+        function authSwitch(t) {
+            document.querySelectorAll('.auth-tab').forEach((el, i) => el.classList.toggle('active', ['login', 'register'][i] === t))
+            document.getElementById('auth-login').style.display = t === 'login' ? 'block' : 'none'
+            document.getElementById('auth-register').style.display = t === 'register' ? 'block' : 'none'
+            document.getElementById('auth-bonus').style.display = t === 'register' ? 'block' : 'none'
+            document.getElementById('auth-err').style.display = 'none'
+        }
+
+        function authErr(msg) {
+            let el = document.getElementById('auth-err')
+            el.textContent = msg; el.style.display = 'block'
+        }
+
+        async function doLogin() {
+            let btn = document.getElementById('l-btn')
+            let email = document.getElementById('l-email').value.trim()
+            let pass = document.getElementById('l-pass').value
+            if (!email || !pass) { authErr('Vyplň email a heslo'); return }
+            btn.disabled = true; btn.textContent = '⏳ Přihlašuji...'
+            let { error } = await sb.auth.signInWithPassword({ email, password: pass })
+            if (error) { authErr(error.message); btn.disabled = false; btn.textContent = 'Přihlásit se →' }
+        }
+
+        async function doRegister() {
+            let btn = document.getElementById('r-btn')
+            let name = document.getElementById('r-name').value.trim()
+            let email = document.getElementById('r-email').value.trim()
+            let pass = document.getElementById('r-pass').value
+            if (!name || !email || !pass) { authErr('Vyplň všechna pole'); return }
+            if (pass.length < 6) { authErr('Heslo musí mít alespoň 6 znaků'); return }
+            // Ověř unikátnost username
+            let { data: existing } = await sb.from('profiles').select('id').eq('username', name).maybeSingle()
+            if (existing) { authErr('Toto jméno je již obsazeno'); return }
+            btn.disabled = true; btn.textContent = '⏳ Vytvářím...'
+            let { error } = await sb.auth.signUp({
+                email, password: pass,
+                options: { data: { username: name } }
+            })
+            if (error) { authErr(error.message); btn.disabled = false; btn.textContent = 'Vytvořit účet →' }
+            else { authErr(''); notify('✅ Účet vytvořen! Zkontroluj email pro potvrzení.') }
+        }
+
+        async function doLogout() {
+            await sb.auth.signOut()
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // APP START
+        // ══════════════════════════════════════════════════════════
+        async function startApp() {
+            await loadMarkets()
+            await loadMyBets()
+            fullRender()
+            setupRealtimeSubscriptions()
+            setInterval(botSimTick, 4000)  // bot chat + LB simulation
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // SUPABASE DATA LOADING
+        // ══════════════════════════════════════════════════════════
+        async function loadMarkets() {
+            let { data } = await sb.from('markets').select('*').order('created_at', { ascending: false })
+            markets = data || []
+            // Přidáme historii z poslední cache (pro grafy)
+            for (let m of markets) {
+                let { data: hist } = await sb.from('market_history')
+                    .select('prob,yes_pool,no_pool,recorded_at')
+                    .eq('market_id', m.id)
+                    .order('recorded_at', { ascending: true })
+                    .limit(200)
+                m._hist = (hist || []).map(h => ({
+                    p: h.prob, yes: h.yes_pool, no: h.no_pool,
+                    t: new Date(h.recorded_at).getTime()
+                }))
+            }
+        }
+
+        async function loadMyBets() {
+            if (!currentUser) return
+            let { data } = await sb.from('bets')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .eq('paid_out', false)
+            myBets = {}
+            for (let b of (data || [])) {
+                if (!myBets[b.market_id]) myBets[b.market_id] = { yes_inv: 0, no_inv: 0, yes_shares: 0, no_shares: 0 }
+                let pos = myBets[b.market_id]
+                if (b.side === 'yes') { pos.yes_inv += b.amount; pos.yes_shares += b.shares }
+                else { pos.no_inv += b.amount; pos.no_shares += b.shares }
+            }
+        }
+
+        async function refreshBalance() {
+            let { data } = await sb.from('profiles').select('balance').eq('id', currentUser.id).single()
+            if (data) {
+                currentProfile.balance = data.balance
+                document.getElementById('bal').textContent = data.balance.toFixed(2)
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // REALTIME SUBSCRIPTIONS
+        // ══════════════════════════════════════════════════════════
+        function setupRealtimeSubscriptions() {
+            // Markets update
+            sb.channel('markets-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, payload => {
+                    let updated = payload.new
+                    if (!updated) return
+                    let idx = markets.findIndex(m => m.id === updated.id)
+                    if (idx >= 0) {
+                        markets[idx] = { ...markets[idx], ...updated }
+                        updateCard(markets[idx])
+                        updateTicker()
+                    } else {
+                        // Nový market
+                        markets.unshift(updated)
+                        updated._hist = []
+                        fullRender()
+                    }
+                })
+                .subscribe()
+
+            // Chat messages
+            sb.channel('chat-channel')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+                    let msg = payload.new
+                    let ce = document.getElementById('chat-' + msg.market_id)
+                    if (ce) {
+                        let d = document.createElement('div')
+                        d.className = 'chat-msg'
+                        d.innerHTML = `<span class="cn" style="color:${msg.user_color}">${msg.user_name}</span><span class="ct">${msg.message}</span>`
+                        ce.appendChild(d)
+                        while (ce.children.length > 14) ce.removeChild(ce.firstChild)
+                        ce.scrollTop = ce.scrollHeight
+                    }
+                })
+                .subscribe()
+
+            // Market history (pro live chart update)
+            sb.channel('history-channel')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'market_history' }, payload => {
+                    let h = payload.new
+                    let m = markets.find(x => x.id === h.market_id)
+                    if (m) {
+                        if (!m._hist) m._hist = []
+                        m._hist.push({ p: h.prob, yes: h.yes_pool, no: h.no_pool, t: new Date(h.recorded_at).getTime() })
+                        if (m._hist.length > 300) m._hist.shift()
+                        let c = document.getElementById('c-' + m.id)
+                        if (c) draw(c, m._hist, selectedPeriod[m.id] || 'all')
+                    }
+                })
+                .subscribe()
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // TABS
+        // ══════════════════════════════════════════════════════════
+        function switchTab(t) {
+            const TABS = ['markets', 'mymarkets', 'leaderboard']
+            document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', TABS[i] === t))
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'))
+            document.getElementById('tab-' + t).classList.add('active')
+            if (t === 'leaderboard') renderLeaderboard()
+            if (t === 'mymarkets') renderMyMarkets()
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // MODALS
+        // ══════════════════════════════════════════════════════════
+        function openModal(id) { document.getElementById(id).classList.add('open') }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open')
+            if (id === 'pay-modal') {
+                document.getElementById('pay-form').style.display = 'block'
+                document.getElementById('pay-success').style.display = 'none'
+                let btn = document.getElementById('pay-btn')
+                btn.disabled = false; btn.textContent = 'Zaplatit a dobít kredit →'
+            }
+        }
+        document.querySelectorAll('.modal-overlay').forEach(el =>
+            el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open') })
+        )
+
+        // ══════════════════════════════════════════════════════════
+        // TOPUP
+        // ══════════════════════════════════════════════════════════
+        function selTopup(v) {
+            topupAmount = v
+            document.querySelectorAll('.amt-pill').forEach(el => el.classList.toggle('sel', Number(el.dataset.v) === v))
+            document.getElementById('topup-custom').value = ''
+        }
+        function selTopupCustom() {
+            let v = Number(document.getElementById('topup-custom').value)
+            if (v > 0) { topupAmount = v; document.querySelectorAll('.amt-pill').forEach(el => el.classList.remove('sel')) }
+        }
+        function formatCard(inp) {
+            let v = inp.value.replace(/\D/g, '').substring(0, 16)
+            inp.value = v.replace(/(\d{4})/g, '$1 ').trim()
+            let icon = document.getElementById('card-icon')
+            if (v.startsWith('4')) icon.textContent = '💳'
+            else if (v.startsWith('5')) icon.textContent = '🏦'
+            else icon.textContent = '💳'
+        }
+        function formatExp(inp) {
+            let v = inp.value.replace(/\D/g, '')
+            if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2)
+            inp.value = v
+        }
+        async function doTopup() {
+            let name = document.getElementById('card-name').value.trim()
+            let num = document.getElementById('card-num').value.replace(/\s/g, '')
+            let exp = document.getElementById('card-exp').value.trim()
+            let cvv = document.getElementById('card-cvv').value.trim()
+            if (!name || num.length < 15 || !exp.match(/^\d{2}\/\d{2}$/) || cvv.length < 3) {
+                notify('⚠️ Vyplň správně všechny údaje!'); return
+            }
+            if (!topupAmount || topupAmount <= 0) { notify('⚠️ Zadej platnou částku!'); return }
+            let btn = document.getElementById('pay-btn')
+            btn.disabled = true; btn.textContent = '⏳ Zpracovávám...'
+            // Simulace platební brány (2s delay)
+            await new Promise(r => setTimeout(r, 1800))
+            // Přičíst balance v Supabase
+            let { error } = await sb.from('profiles')
+                .update({ balance: currentProfile.balance + topupAmount })
+                .eq('id', currentUser.id)
+            if (error) { notify('❌ Chyba: ' + error.message); btn.disabled = false; btn.textContent = 'Zaplatit a dobít kredit →'; return }
+            currentProfile.balance += topupAmount
+            document.getElementById('bal').textContent = currentProfile.balance.toFixed(2)
+            document.getElementById('pay-form').style.display = 'none'
+            document.getElementById('pay-success').style.display = 'block'
+            document.getElementById('pay-success-msg').textContent = `$${topupAmount.toLocaleString()} připsáno na účet.`
+            notify(`✅ Dobito $${topupAmount.toLocaleString()}!`)
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // CREATE USER MARKET
+        // ══════════════════════════════════════════════════════════
+        async function doCreateMarket() {
+            const FEE = 10000
+            if (currentProfile.balance < FEE) { notify('⚠️ Nemáš dost! Potřebuješ $10 000'); return }
+            let q = document.getElementById('cm-q').value.trim()
+            let sy = Number(document.getElementById('cm-yes').value) || 100
+            let sn = Number(document.getElementById('cm-no').value) || 100
+            let dlVal = document.getElementById('cm-deadline').value
+            let deadline = dlVal ? new Date(dlVal).toISOString() : null
+            if (!q) { notify('⚠️ Zadej otázku!'); return }
+            let btn = document.getElementById('cm-btn')
+            btn.disabled = true; btn.textContent = '⏳ Vytvářím...'
+            // Odečíst fee
+            await sb.from('profiles').update({ balance: currentProfile.balance - FEE }).eq('id', currentUser.id)
+            currentProfile.balance -= FEE
+            document.getElementById('bal').textContent = currentProfile.balance.toFixed(2)
+            // Vytvořit market
+            let { data, error } = await sb.from('markets').insert({
+                question: q, yes_pool: sy, no_pool: sn,
+                prob: sy / (sy + sn),
+                deadline: deadline,
+                creator_id: currentUser.id,
+                creator_name: currentProfile.username,
+                is_admin_market: false
+            }).select().single()
+            if (error) { notify('❌ Chyba: ' + error.message); btn.disabled = false; btn.textContent = 'Vytvořit trh za $10 000 →'; return }
+            // Uložit první history bod
+            await sb.from('market_history').insert({ market_id: data.id, prob: data.prob, yes_pool: sy, no_pool: sn })
+            btn.disabled = false; btn.textContent = 'Vytvořit trh za $10 000 →'
+            closeModal('create-market-modal')
+            document.getElementById('cm-q').value = ''
+            notify('🏗 Trh vytvořen! Dostaneš 10 % ze všech sázek.')
+            switchTab('markets')
+            await loadMarkets()
+            fullRender()
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // MY MARKETS
+        // ══════════════════════════════════════════════════════════
+        async function renderMyMarkets() {
+            let { data } = await sb.from('markets').select('*').eq('creator_id', currentUser.id).order('created_at', { ascending: false })
+            let el = document.getElementById('my-markets-list')
+            if (!data?.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-family:Space Mono,monospace;font-size:12px">Zatím žádné tvoje trhy</div>'; return }
+            el.innerHTML = data.map(x => {
+                let vol = (x.yes_pool || 0) + (x.no_pool || 0)
+                return `<div class="mm-card">
+          <div class="mm-q">${x.question}</div>
+          <div class="mm-stats">
+            <span>OBJEM: <span style="color:var(--yellow)">$${vol.toFixed(0)}</span></span>
+            <span>POPLATKY: <span style="color:var(--green)">$${(x.creator_fee_earned || 0).toFixed(2)}</span></span>
+            <span>STATUS: <span style="color:${x.closed ? 'var(--muted)' : 'var(--green)'}">${x.closed ? 'UZAVŘENO' : 'AKTIVNÍ'}</span></span>
+          </div>
+        </div>`
+            }).join('')
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // LEADERBOARD
+        // ══════════════════════════════════════════════════════════
+        async function renderLeaderboard() {
+            let { data } = await sb.from('leaderboard').select('*').order('balance', { ascending: false }).limit(50)
+            let cont = document.getElementById('lb-container')
+            if (!data?.length) { cont.innerHTML = '<div class="empty">Zatím žádní hráči</div>'; return }
+            let html = `<div class="lb-card">
+        <div class="lb-header"><div class="lb-title">LEADERBOARD</div><div class="lb-subtitle">${data.length} traders · live</div></div>
+        <div class="lb-col-header-row">
+          <div class="lb-col-header">#</div>
+          <div class="lb-col-header">TRADER</div>
+          <div class="lb-col-header">BALANCE</div>
+          <div class="lb-col-header">SÁZKY</div>
+          <div class="lb-col-header">P&L</div>
+        </div>`
+            data.forEach((e, i) => {
+                let rank = i + 1
+                let pnl = (e.balance || 0) - 1000
+                let isMe = e.id === currentUser?.id
+                html += `<div class="lb-row${isMe ? ' me' : ''}">
+          <div class="lb-rank ${rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : ''}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+          <div class="lb-name">${e.username}${isMe ? '<span class="you-tag">YOU</span>' : ''}</div>
+          <div class="lb-col">$${(e.balance || 0).toFixed(2)}</div>
+          <div class="lb-col">${e.total_bets || 0}</div>
+          <div class="lb-col ${pnl >= 0 ? 'pos' : 'neg'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</div>
+        </div>`
+            })
+            cont.innerHTML = html + '</div>'
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // BET
+        // ══════════════════════════════════════════════════════════
+        function getAmt(id) {
+            let custom = document.getElementById('custom-' + id)
+            if (custom?.value && Number(custom.value) > 0) return Number(custom.value)
+            return selectedAmt[id] || 10
+        }
+        window.setAmt = function (id, v) {
+            selectedAmt[id] = v
+            document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.toggle('active', Number(b.dataset.v) === v))
+            let ci = document.getElementById('custom-' + id); if (ci) ci.value = ''
+            updateBetBtns(id, v)
+        }
+        window.customAmtChange = function (id) {
+            let v = Number(document.getElementById('custom-' + id)?.value)
+            if (v > 0) {
+                document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.remove('active'))
+                updateBetBtns(id, v)
+            }
+        }
+        function updateBetBtns(id, v) {
+            let by = document.getElementById('btn-yes-' + id); if (by) by.textContent = `↑ YES $${v}`
+            let bn = document.getElementById('btn-no-' + id); if (bn) bn.textContent = `↓ NO $${v}`
+        }
+
+        window.bet = async function (id, type) {
+            let m = markets.find(x => x.id == id)
+            if (!m || m.closed) return
+            if (m.deadline && new Date() > new Date(m.deadline)) { notify('⏱ Deadline vypršel!'); return }
+            let invest = getAmt(id)
+            if (!invest || invest <= 0) { notify('Zadej platnou částku! 💸'); return }
+            if (currentProfile.balance < invest) { notify('Nedostatek peněz! 💸'); return }
+
+            // Disable buttons during request
+            let by = document.getElementById('btn-yes-' + id), bn = document.getElementById('btn-no-' + id)
+            if (by) by.disabled = true; if (bn) bn.disabled = true
+
+            // Volání atomické DB funkce
+            let { data, error } = await sb.rpc('place_bet', {
+                p_market_id: id,
+                p_side: type,
+                p_amount: invest
+            })
+
+            if (by) by.disabled = false; if (bn) bn.disabled = false
+
+            if (error) { notify('❌ ' + error.message); return }
+
+            currentProfile.balance = data.new_balance
+            document.getElementById('bal').textContent = data.new_balance.toFixed(2)
+
+            // Aktualizovat lokální portfolio
+            if (!myBets[id]) myBets[id] = { yes_inv: 0, no_inv: 0, yes_shares: 0, no_shares: 0 }
+            let pos = myBets[id]
+            if (type === 'yes') { pos.yes_inv += invest; pos.yes_shares += data.shares }
+            else { pos.no_inv += invest; pos.no_shares += data.shares }
+
+            notify(`+${data.shares.toFixed(2)} ${type.toUpperCase()} shares @ $${data.price.toFixed(3)}`)
+
+            // Uložit chat zprávu
+            await sb.from('chat_messages').insert({
+                market_id: id,
+                user_name: currentProfile.username,
+                user_color: 'var(--yellow)',
+                message: `koupil ${type.toUpperCase()} za $${invest} @ ${(data.price * 100).toFixed(1)}%`,
+                is_bot: false
+            })
+            updateCard(m)
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // BOT SIMULATION (jen chat + leaderboard fluctuation)
+        // ══════════════════════════════════════════════════════════
+        async function botSimTick() {
+            for (let m of markets) {
+                if (m.closed) continue
+                if (m.deadline && new Date() > new Date(m.deadline)) continue
+                if (Math.random() < 0.5) {
+                    let bot = BOTS[Math.floor(Math.random() * BOTS.length)]
+                    let p = m.prob || 0.5
+                    let bias = p + ((Math.random() - .5) * .45)
+                    let lines = bias > 0.58 ? BULLISH : bias < 0.42 ? BEARISH : NEUTRAL
+                    let text = lines[Math.floor(Math.random() * lines.length)]
+                    await sb.from('chat_messages').insert({
+                        market_id: m.id,
+                        user_name: bot.name,
+                        user_color: bot.color,
+                        message: text,
+                        is_bot: true
+                    })
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // CHART
+        // ══════════════════════════════════════════════════════════
+        function getHistSlice(hist, period) {
+            if (!hist?.length) return hist || []
+            if (period === 'all') return hist
+            let now = Date.now()
+            let cutoffs = { h: 3600000, d: 86400000, w: 604800000, m: 2592000000 }
+            let filtered = hist.filter(p => typeof p === 'object' && (now - (p.t || 0)) <= cutoffs[period])
+            return filtered.length > 1 ? filtered : hist
+        }
+
+        function draw(canvas, rawHist, period) {
+            let hist = getHistSlice(rawHist, period || 'all')
+            let data = (hist || []).map(h => typeof h === 'object' ? h : { p: h, yes: null, no: null, t: null })
+            if (!data || data.length < 2) return
+            let dpr = window.devicePixelRatio || 1
+            let w = canvas.offsetWidth || 300, h = 100
+            canvas.width = w * dpr; canvas.height = h * dpr
+            let ctx = canvas.getContext('2d')
+            ctx.scale(dpr, dpr); ctx.clearRect(0, 0, w, h)
+            let toY = v => h - (v * h * .82 + h * .08)
+            let step = w / (data.length - 1)
+            // YES
+            let grad = ctx.createLinearGradient(0, 0, 0, h)
+            grad.addColorStop(0, 'rgba(0,217,100,.18)'); grad.addColorStop(1, 'rgba(0,217,100,0)')
+            ctx.beginPath()
+            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(d.p)) : ctx.moveTo(0, toY(d.p)))
+            ctx.strokeStyle = '#00d964'; ctx.lineWidth = 2; ctx.stroke()
+            ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath()
+            ctx.fillStyle = grad; ctx.fill()
+            // NO
+            ctx.beginPath()
+            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(1 - d.p)) : ctx.moveTo(0, toY(1 - d.p)))
+            ctx.strokeStyle = '#ff4466'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke()
+            ctx.setLineDash([])
+            // 50% line
+            ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(0, toY(.5)); ctx.lineTo(w, toY(.5)); ctx.stroke()
+            ctx.setLineDash([])
+            // labels
+            ctx.fillStyle = 'rgba(0,217,100,.8)'; ctx.font = "9px 'Space Mono',monospace"
+            ctx.fillText('YES', (data.length - 1) * step - 24, toY(data[data.length - 1].p) - 5)
+            ctx.fillStyle = 'rgba(255,68,102,.8)'
+            ctx.fillText('NO', (data.length - 1) * step - 20, toY(1 - data[data.length - 1].p) + 12)
+            canvas._chartData = data; canvas._step = step
+        }
+
+        function attachTooltip(canvas) {
+            if (canvas._ttAttached) return
+            canvas._ttAttached = true
+            let tt = canvas.parentElement.querySelector('.chart-tooltip')
+            if (!tt) return
+            canvas.addEventListener('mousemove', e => {
+                if (!canvas._chartData || !canvas._step) return
+                let rect = canvas.getBoundingClientRect()
+                let idx = Math.min(Math.round((e.clientX - rect.left) / canvas._step), canvas._chartData.length - 1)
+                let d = canvas._chartData[idx]; if (!d) return
+                tt.style.display = 'block'
+                tt.style.left = Math.min(Math.max(idx * canvas._step, 50), rect.width - 50) + 'px'
+                tt.style.top = '4px'
+                let t = d.t ? new Date(d.t).toLocaleTimeString('cs', { hour: '2-digit', minute: '2-digit' }) : '—'
+                tt.innerHTML = `<div class="tt-time">${t}</div><div class="tt-yes">YES ${(d.p * 100).toFixed(1)}%${d.yes != null ? ' ($' + Number(d.yes).toFixed(1) + ')' : ''}</div><div class="tt-no">NO ${((1 - d.p) * 100).toFixed(1)}%${d.no != null ? ' ($' + Number(d.no).toFixed(1) + ')' : ''}</div>`
+            })
+            canvas.addEventListener('mouseleave', () => tt.style.display = 'none')
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // DEADLINE
+        // ══════════════════════════════════════════════════════════
         function deadlineStr(deadline) {
-            if (!deadline) return null;
-            let diff = deadline - Date.now();
-            if (diff <= 0) return { text: '⏱ SÁZENÍ UZAVŘENO', cls: 'deadline-urgent' };
-            let h = Math.floor(diff / 3600000), mn = Math.floor((diff % 3600000) / 60000), d = Math.floor(diff / 86400000);
-            if (d > 1) return { text: `⏱ ${d}d ${h % 24}h left`, cls: '' };
-            if (h > 0) return { text: `⏱ ${h}h ${mn}m left`, cls: h < 6 ? 'deadline-soon' : '' };
-            return { text: `⏱ ${mn}m left`, cls: 'deadline-urgent' };
+            if (!deadline) return null
+            let diff = new Date(deadline) - Date.now()
+            if (diff <= 0) return { text: '⏱ SÁZENÍ UZAVŘENO', cls: 'deadline-urgent' }
+            let h = Math.floor(diff / 3600000), mn = Math.floor((diff % 3600000) / 60000), d = Math.floor(diff / 86400000)
+            if (d > 1) return { text: `⏱ ${d}d ${h % 24}h left`, cls: '' }
+            if (h > 0) return { text: `⏱ ${h}h ${mn}m left`, cls: h < 6 ? 'deadline-soon' : '' }
+            return { text: `⏱ ${mn}m left`, cls: 'deadline-urgent' }
         }
 
-        /* ── TICKER ── */
+        // ══════════════════════════════════════════════════════════
+        // PERIOD SELECTOR
+        // ══════════════════════════════════════════════════════════
+        window.setPeriod = function (id, p) {
+            selectedPeriod[id] = p
+            document.querySelectorAll(`.period-row-${id} .period-btn`).forEach(b => b.classList.toggle('active', b.dataset.p === p))
+            let m = markets.find(x => x.id == id); if (!m) return
+            let c = document.getElementById('c-' + id); if (c) draw(c, m._hist, p)
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // TICKER
+        // ══════════════════════════════════════════════════════════
         function updateTicker() {
-            let parts = markets.filter(m => !m.closed).map(m => `${m.q.substring(0, 26)}…  ${((m.p || .5) * 100).toFixed(1)}%`);
-            document.getElementById("ticker").textContent = parts.length ? "⬤ LIVE  —  " + parts.join("   ·   ") : "⬤ LIVE — žádné aktivní trhy";
+            let parts = markets.filter(m => !m.closed).map(m => `${m.question.substring(0, 26)}…  ${((m.prob || .5) * 100).toFixed(1)}%`)
+            document.getElementById('ticker').textContent = parts.length
+                ? '⬤ LIVE  —  ' + parts.join('   ·   ')
+                : '⬤ LIVE — žádné aktivní trhy'
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // BUILD CARD
+        // ══════════════════════════════════════════════════════════
+        function buildCard(m) {
+            let p = m.prob != null ? m.prob : 0.5
+            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1)
+            let vol = ((m.yes_pool || 0) + (m.no_pool || 0)).toFixed(0)
+            let pos = myBets[m.id] || { yes_inv: 0, no_inv: 0, yes_shares: 0, no_shares: 0 }
+            let hasPos = pos.yes_shares > 0.001 || pos.no_shares > 0.001
+            let curAmt = selectedAmt[m.id] || 10
+            let dl = deadlineStr(m.deadline)
+            let isExpired = m.deadline && new Date() > new Date(m.deadline)
+            let locked = m.closed || isExpired
+            let periods = ['h', 'd', 'w', 'm', 'all'], pLabels = { h: '1H', d: '1D', w: '1W', m: '1M', all: 'ALL' }
+            let curPeriod = selectedPeriod[m.id] || 'all'
+
+            let div = document.createElement('div')
+            div.className = 'card'; div.id = 'card-' + m.id
+            div.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">${m.question}${m.closed ? `<span class="closed-badge ${m.result === 'yes' ? 'badge-yes' : 'badge-no'}">✓ ${m.result.toUpperCase()}</span>` : ''}</div>
+          ${m.creator_name ? `<div class="card-creator">👤 Vytvořil: ${m.creator_name}</div>` : ''}
+          ${dl ? `<div class="card-deadline ${dl.cls}" id="dl-${m.id}">${dl.text}</div>` : ''}
+          ${isExpired && !m.closed ? `<div class="locked-banner">🔒 Deadline vypršel — sázení uzavřeno. Čeká se na výsledek.</div>` : ''}
+          <div class="prob-row">
+            <div>
+              <div class="prob-big" id="pbig-${m.id}">${pYes}%</div>
+              <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">YES probability</div>
+            </div>
+            <div class="prob-sides">
+              <div class="py" id="pyes-${m.id}">YES ${pYes}%</div>
+              <div class="pn" id="pno-${m.id}">NO ${pNo}%</div>
+            </div>
+          </div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar-${m.id}" style="width:${pYes}%"></div></div>
+        </div>
+        <div class="vol-row">
+          <div class="vol-item">VOL <span class="v" id="vol-${m.id}">$${Number(vol).toLocaleString()}</span></div>
+          <div class="vol-item">YES <span class="v" id="yp-${m.id}">$${p.toFixed(3)}</span></div>
+          <div class="vol-item">NO <span class="v" id="np-${m.id}">$${(1 - p).toFixed(3)}</span></div>
+        </div>
+        ${locked ? `<div class="period-row period-row-${m.id}">
+          ${periods.map(pp => `<button class="period-btn${pp === curPeriod ? ' active' : ''}" data-p="${pp}" onclick="setPeriod(${m.id},'${pp}')">${pLabels[pp]}</button>`).join('')}
+        </div>`: ''}
+        <div class="chart-wrap"><div class="chart-container">
+          <canvas id="c-${m.id}" class="main-chart"></canvas>
+          <div class="chart-tooltip" id="tt-${m.id}"></div>
+        </div></div>
+        ${hasPos ? `<div id="mypos-${m.id}" class="my-pos">
+          <div class="pos-title">Moje pozice</div>
+          <div class="pos-grid">
+            <div class="pos-item"><div class="pi-label">INVESTOVÁNO YES</div><div class="pi-val pi-yes" id="myyes-inv-${m.id}">$${pos.yes_inv.toFixed(2)}</div></div>
+            <div class="pos-item"><div class="pi-label">INVESTOVÁNO NO</div><div class="pi-val pi-no" id="myno-inv-${m.id}">$${pos.no_inv.toFixed(2)}</div></div>
+            <div class="pos-item"><div class="pi-label">YES SHARES</div><div class="pi-val pi-shares" id="myes-${m.id}">${pos.yes_shares.toFixed(3)}</div></div>
+            <div class="pos-item"><div class="pi-label">NO SHARES</div><div class="pi-val pi-no" id="mno-${m.id}">${pos.no_shares.toFixed(3)}</div></div>
+          </div>
+        </div>`: `<div id="mypos-${m.id}" style="display:none"></div>`}
+        ${!locked ? `
+        <div class="amount-row amt-row-${m.id}">
+          ${AMOUNTS.map(a => `<button class="amt-btn${a === curAmt ? ' active' : ''}" data-v="${a}" onclick="setAmt(${m.id},${a})">$${a}</button>`).join('')}
+          <div class="custom-amt-wrap">
+            <span class="custom-lbl">$</span>
+            <input class="custom-amt-input" id="custom-${m.id}" type="number" min="1" placeholder="vlastní" oninput="customAmtChange(${m.id})">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-yes" id="btn-yes-${m.id}" onclick="bet(${m.id},'yes')">↑ YES $${curAmt}</button>
+          <button class="btn btn-no" id="btn-no-${m.id}" onclick="bet(${m.id},'no')">↓ NO $${curAmt}</button>
+        </div>`: ''}
+        <div class="chat-wrap">
+          <div class="chat-label">⬤ live chat</div>
+          <div class="chat-msgs" id="chat-${m.id}"></div>
+        </div>`
+            return div
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // UPDATE CARD
+        // ══════════════════════════════════════════════════════════
+        function updateCard(m) {
+            let p = m.prob != null ? m.prob : 0.5
+            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1)
+            let vol = (m.yes_pool || 0) + (m.no_pool || 0)
+            let set = (id, v) => { let e = document.getElementById(id); if (e) e.textContent = v }
+            set(`pbig-${m.id}`, pYes + '%')
+            set(`pyes-${m.id}`, 'YES ' + pYes + '%')
+            set(`pno-${m.id}`, 'NO ' + pNo + '%')
+            set(`vol-${m.id}`, '$' + vol.toFixed(0))
+            set(`yp-${m.id}`, '$' + p.toFixed(3))
+            set(`np-${m.id}`, '$' + (1 - p).toFixed(3))
+            let bar = document.getElementById('bar-' + m.id); if (bar) bar.style.width = pYes + '%'
+            let dl = deadlineStr(m.deadline)
+            let dlEl = document.getElementById('dl-' + m.id)
+            if (dlEl && dl) { dlEl.textContent = dl.text; dlEl.className = 'card-deadline ' + dl.cls }
+            // position
+            let pos = myBets[m.id] || { yes_inv: 0, no_inv: 0, yes_shares: 0, no_shares: 0 }
+            let hasPos = pos.yes_shares > 0.001 || pos.no_shares > 0.001
+            let pe = document.getElementById('mypos-' + m.id)
+            if (pe && hasPos) {
+                pe.style.display = ''; pe.className = 'my-pos'
+                set(`myyes-inv-${m.id}`, '$' + pos.yes_inv.toFixed(2))
+                set(`myno-inv-${m.id}`, '$' + pos.no_inv.toFixed(2))
+                set(`myes-${m.id}`, pos.yes_shares.toFixed(3))
+                set(`mno-${m.id}`, pos.no_shares.toFixed(3))
+            }
+            let c = document.getElementById('c-' + m.id)
+            if (c) { draw(c, m._hist, selectedPeriod[m.id] || 'all'); attachTooltip(c) }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // FULL RENDER
+        // ══════════════════════════════════════════════════════════
+        function fullRender() {
+            let container = document.getElementById('markets')
+            let newIds = markets.map(m => String(m.id))
+            renderedIds.forEach(id => {
+                if (!newIds.includes(id)) { let el = document.getElementById('card-' + id); if (el) el.remove() }
+            })
+            markets.forEach((m, i) => {
+                let existing = document.getElementById('card-' + m.id)
+                if (!existing) {
+                    let card = buildCard(m)
+                    let ref = container.children[i]
+                    ref ? container.insertBefore(card, ref) : container.appendChild(card)
+                    // Load chat history
+                    loadChatHistory(m.id)
+                    requestAnimationFrame(() => {
+                        let c = document.getElementById('c-' + m.id)
+                        if (c) { draw(c, m._hist, 'all'); attachTooltip(c) }
+                    })
+                } else {
+                    updateCard(m)
+                }
+            })
+            if (!markets.length) container.innerHTML = '<div class="empty">⬤ Zatím žádné trhy</div>'
+            renderedIds = newIds
+            updateTicker()
+        }
+
+        async function loadChatHistory(marketId) {
+            let { data } = await sb.from('chat_messages')
+                .select('*')
+                .eq('market_id', marketId)
+                .order('created_at', { ascending: false })
+                .limit(12)
+            let ce = document.getElementById('chat-' + marketId)
+            if (!ce || !data) return
+            ce.innerHTML = data.reverse().map(c => `<div class="chat-msg"><span class="cn" style="color:${c.user_color}">${c.user_name}</span><span class="ct">${c.message}</span></div>`).join('')
+            ce.scrollTop = ce.scrollHeight
         }
 
         function notify(msg) {
-            let el = document.getElementById("notif");
-            el.textContent = msg; el.classList.add("show");
-            clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 2800);
+            let el = document.getElementById('notif')
+            el.textContent = msg; el.classList.add('show')
+            clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800)
         }
 
-        window.setPeriod = function (id, p) {
-            selectedPeriod[id] = p;
-            document.querySelectorAll(`.period-row-${id} .period-btn`).forEach(b => b.classList.toggle('active', b.dataset.p === p));
-            let m = markets.find(x => x.id == id); if (!m) return;
-            let c = document.getElementById("c-" + id); if (c) draw(c, m.hist, p);
-        };
-
-        /* ── BUILD CARD ── */
-        function buildCard(m) {
-            let p = m.p != null ? m.p : 0.5;
-            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1);
-            let vol = ((m.yes || 0) + (m.no || 0)).toFixed(0);
-            let pos = portfolio[m.id] || { yes: 0, no: 0, yesInvested: 0, noInvested: 0 };
-            let hasPos = (pos.yes || 0) > 0.001 || (pos.no || 0) > 0.001;
-            let curAmt = selectedAmt[m.id] || 10;
-            let dl = deadlineStr(m.deadline);
-            let isExpired = m.deadline && Date.now() > m.deadline;
-            let isBettingLocked = m.closed || isExpired;
-            let periods = ['h', 'd', 'w', 'm', 'all'];
-            let periodLabels = { h: '1H', d: '1D', w: '1W', m: '1M', all: 'ALL' };
-            let curPeriod = selectedPeriod[m.id] || 'all';
-            let div = document.createElement("div");
-            div.className = "card"; div.id = "card-" + m.id;
-            div.innerHTML = `
-                    <div class="card-header">
-                        <div class="card-title">${m.q}${m.closed ? `<span class="closed-badge ${m.result === "yes" ? "badge-yes" : "badge-no"}">✓ ${m.result.toUpperCase()}</span>` : ""}</div>
-                        ${m.creatorName ? `<div class="card-creator">👤 Vytvořil: ${m.creatorName}</div>` : ''}
-                        ${dl ? `<div class="card-deadline ${dl.cls}" id="dl-${m.id}">${dl.text}</div>` : ''}
-                        ${isExpired && !m.closed ? `<div class="locked-banner">🔒 Deadline vypršel — sázení je uzavřeno. Čeká se na výsledek.</div>` : ''}
-                        <div class="prob-row">
-                            <div>
-                                <div class="prob-big" id="pbig-${m.id}">${pYes}%</div>
-                                <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">YES probability</div>
-                            </div>
-                            <div class="prob-sides">
-                                <div class="py" id="pyes-${m.id}">YES ${pYes}%</div>
-                                <div class="pn" id="pno-${m.id}">NO ${pNo}%</div>
-                            </div>
-                        </div>
-                        <div class="bar-wrap"><div class="bar-fill" id="bar-${m.id}" style="width:${pYes}%"></div></div>
-                    </div>
-                    <div class="vol-row">
-                        <div class="vol-item">VOL <span class="v" id="vol-${m.id}">$${Number(vol).toLocaleString()}</span></div>
-                        <div class="vol-item">YES <span class="v" id="yp-${m.id}">$${p.toFixed(3)}</span></div>
-                        <div class="vol-item">NO <span class="v" id="np-${m.id}">$${(1 - p).toFixed(3)}</span></div>
-                    </div>
-                    ${m.closed ? `<div class="period-row period-row-${m.id}">
-                        ${periods.map(pp => `<button class="period-btn${pp === curPeriod ? ' active' : ''}" data-p="${pp}" onclick="setPeriod(${m.id},'${pp}')">${periodLabels[pp]}</button>`).join('')}
-                    </div>` : ''}
-                    <div class="chart-wrap">
-                        <div class="chart-container">
-                            <canvas id="c-${m.id}" class="main-chart"></canvas>
-                            <div class="chart-tooltip" id="tt-${m.id}"></div>
-                        </div>
-                    </div>
-                    ${hasPos ? `<div id="mypos-${m.id}" class="my-pos">
-                        <div class="pos-title">Moje pozice</div>
-                        <div class="pos-grid">
-                            <div class="pos-item">
-                                <div class="pi-label">INVESTOVÁNO YES</div>
-                                <div class="pi-val pi-yes" id="myyes-inv-${m.id}">$${(pos.yesInvested || 0).toFixed(2)}</div>
-                            </div>
-                            <div class="pos-item">
-                                <div class="pi-label">INVESTOVÁNO NO</div>
-                                <div class="pi-val pi-no" id="myno-inv-${m.id}">$${(pos.noInvested || 0).toFixed(2)}</div>
-                            </div>
-                            <div class="pos-item">
-                                <div class="pi-label">YES SHARES</div>
-                                <div class="pi-val pi-shares" id="myes-${m.id}">${(pos.yes || 0).toFixed(3)}</div>
-                            </div>
-                            <div class="pos-item">
-                                <div class="pi-label">NO SHARES</div>
-                                <div class="pi-val pi-no" id="mno-${m.id}">${(pos.no || 0).toFixed(3)}</div>
-                            </div>
-                        </div>
-                    </div>` : `<div id="mypos-${m.id}" style="display:none"></div>`}
-                    ${!isBettingLocked ? `
-                    <div class="amount-row amt-row-${m.id}">
-                        ${AMOUNTS.map(a => `<button class="amt-btn${a === curAmt ? " active" : ""}" data-v="${a}" onclick="setAmt(${m.id},${a})">$${a}</button>`).join("")}
-                        <div class="custom-amt-wrap">
-                            <span class="custom-lbl">$</span>
-                            <input class="custom-amt-input" id="custom-${m.id}" type="number" min="1" placeholder="vlastní" oninput="customAmtChange(${m.id})">
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-yes" id="btn-yes-${m.id}" onclick="bet(${m.id},'yes')">↑ YES $${curAmt}</button>
-                        <button class="btn btn-no" id="btn-no-${m.id}" onclick="bet(${m.id},'no')">↓ NO $${curAmt}</button>
-                    </div>` : ""}
-                    <div class="chat-wrap">
-                        <div class="chat-label">⬤ live chat</div>
-                        <div class="chat-msgs" id="chat-${m.id}">
-                            ${(m.chat || []).slice(-10).map(c => `<div class="chat-msg"><span class="cn" style="color:${c.color || "var(--text)"}">${c.name}</span><span class="ct">${c.text}</span></div>`).join("")}
-                        </div>
-                    </div>`;
-            return div;
-        }
-
-        /* ── UPDATE CARD ── */
-        function updateCard(m) {
-            let p = m.p != null ? m.p : 0.5;
-            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1);
-            let vol = (m.yes || 0) + (m.no || 0);
-            let set = (id, v) => { let e = document.getElementById(id); if (e) e.textContent = v; };
-            set(`pbig-${m.id}`, pYes + "%");
-            set(`pyes-${m.id}`, "YES " + pYes + "%");
-            set(`pno-${m.id}`, "NO " + pNo + "%");
-            set(`vol-${m.id}`, "$" + vol.toFixed(0));
-            set(`yp-${m.id}`, "$" + p.toFixed(3));
-            set(`np-${m.id}`, "$" + (1 - p).toFixed(3));
-            let bar = document.getElementById(`bar-${m.id}`); if (bar) bar.style.width = pYes + "%";
-            // deadline
-            let dl = deadlineStr(m.deadline);
-            let dlEl = document.getElementById(`dl-${m.id}`);
-            if (dlEl && dl) { dlEl.textContent = dl.text; dlEl.className = 'card-deadline ' + dl.cls; }
-            // position
-            let pos = portfolio[m.id] || { yes: 0, no: 0, yesInvested: 0, noInvested: 0 };
-            let hasPos = (pos.yes || 0) > 0.001 || (pos.no || 0) > 0.001;
-            let pe = document.getElementById(`mypos-${m.id}`);
-            if (pe && hasPos) {
-                pe.style.display = '';
-                pe.className = 'my-pos';
-                set(`myes-${m.id}`, (pos.yes || 0).toFixed(3));
-                set(`mno-${m.id}`, (pos.no || 0).toFixed(3));
-                set(`myyes-inv-${m.id}`, "$" + (pos.yesInvested || 0).toFixed(2));
-                set(`myno-inv-${m.id}`, "$" + (pos.noInvested || 0).toFixed(2));
-            }
-            // chart
-            let c = document.getElementById("c-" + m.id);
-            if (c) { draw(c, m.hist, selectedPeriod[m.id] || 'all'); attachTooltip(c); }
-            // chat
-            let ce = document.getElementById("chat-" + m.id);
-            if (ce && m.chat) {
-                let shown = ce.children.length;
-                let msgs = m.chat.slice(-12);
-                if (msgs.length > shown) {
-                    msgs.slice(shown).forEach(c => {
-                        let d = document.createElement("div");
-                        d.className = "chat-msg";
-                        d.innerHTML = `<span class="cn" style="color:${c.color || "var(--text)"}">${c.name}</span><span class="ct">${c.text}</span>`;
-                        ce.appendChild(d);
-                        while (ce.children.length > 14) ce.removeChild(ce.firstChild);
-                    });
-                    ce.scrollTop = ce.scrollHeight;
-                }
-            }
-        }
-
-        /* ── FULL RENDER ── */
-        function fullRender() {
-            checkPayouts();
-            updateBalDisplay();
-            let container = document.getElementById("markets");
-            let sorted = [...markets].reverse();
-            let newIds = sorted.map(m => String(m.id));
-            renderedIds.forEach(id => {
-                if (!newIds.includes(id)) { let el = document.getElementById("card-" + id); if (el) el.remove(); }
-            });
-            sorted.forEach((m, i) => {
-                let existing = document.getElementById("card-" + m.id);
-                if (!existing) {
-                    let card = buildCard(m);
-                    let ref = container.children[i];
-                    ref ? container.insertBefore(card, ref) : container.appendChild(card);
-                    requestAnimationFrame(() => {
-                        let c = document.getElementById("c-" + m.id);
-                        if (c) { draw(c, m.hist, 'all'); attachTooltip(c); }
-                        let ch = document.getElementById("chat-" + m.id); if (ch) ch.scrollTop = ch.scrollHeight;
-                    });
-                } else {
-                    updateCard(m);
-                }
-            });
-            if (!markets.length) container.innerHTML = '<div class="empty">⬤ žádné aktivní trhy</div>';
-            renderedIds = newIds;
-            updateTicker();
-        }
-
-        function tick() {
-            let fresh = load();
-            let structural = fresh.length !== markets.length ||
-                fresh.some((m, i) => !markets[i] || m.id !== markets[i].id || m.closed !== markets[i].closed);
-            markets = fresh;
-            simulate();
-            save(markets);
-            if (structural) {
-                fullRender();
-            } else {
-                checkPayouts();
-                updateBalDisplay();
-                markets.forEach(m => updateCard(m));
-                updateTicker();
-            }
-            // Update leaderboard if visible
-            if (document.getElementById('tab-leaderboard').classList.contains('active')) renderLeaderboard();
-        }
-
-        window.addEventListener("storage", e => {
-            if (e.key === "markets" || e.key === "bal" || e.key === "portfolio") {
-                markets = load();
-                balance = Number(localStorage.getItem("bal") || 1000);
-                portfolio = JSON.parse(localStorage.getItem("portfolio") || "{}");
-                fullRender();
-            }
-        });
-
-        setInterval(tick, 1800);
-        fullRender();
-
-        // Init bot leaderboard
-        (function initBots() {
-            let lb = loadLB();
-            if (lb.length > 2) return;
-            BOTS.slice(0, 8).forEach(b => {
-                if (!lb.find(e => e.name === b.name)) {
-                    lb.push({ name: b.name, isMe: false, balance: 700 + Math.random() * 600, bets: Math.floor(Math.random() * 80) + 5 });
-                }
-            });
-            saveLB(lb);
-        })();
+        init()
     </script>
 </body>
 </html>
