@@ -741,10 +741,9 @@
         // ═══════════════════════════════════════════════════
         // CHECK SESSION ON LOAD (obnoví session po refreshi)
         // ═══════════════════════════════════════════════════
-        sb.auth.onAuthStateChange(async (event, session) => {
-            console.log('ADMIN AUTH EVENT:', event, session?.user?.email);
-            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session?.user) {
-                if (currentUser) return;
+        async function initAdminAuth() {
+            let { data: { session } } = await sb.auth.getSession();
+            if (session?.user) {
                 let { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
                 if (profile && profile.username === 'admin') {
                     currentUser = session.user;
@@ -752,10 +751,15 @@
                     document.getElementById('login-overlay').style.display = 'none';
                     await loadAndRender();
                     setupRealtime();
-                } else if (event === 'INITIAL_SESSION') {
+                } else {
                     await sb.auth.signOut();
                 }
-            } else if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) {
+            }
+        }
+        initAdminAuth();
+
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
                 currentUser = null; currentProfile = null;
                 document.getElementById('login-overlay').style.display = 'flex';
             }
