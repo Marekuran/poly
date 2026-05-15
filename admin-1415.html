@@ -684,23 +684,26 @@
             btn.disabled = true; btn.textContent = 'Přihlašuji...';
 
             let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+            console.log('AUTH RESULT:', data, error);
             if (error) {
                 showErr('❌ ' + error.message);
                 btn.disabled = false; btn.textContent = 'Přihlásit se →';
                 return;
             }
 
-            // Verify admin role — use the session token that was just set
+            // Verify admin role
+            console.log('Fetching profile for:', data.user.id);
             let { data: profile, error: profErr } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+            console.log('PROFILE RESULT:', profile, profErr);
             if (profErr) {
-                showErr('❌ Chyba při načítání profilu: ' + profErr.message);
+                showErr('❌ Chyba profilu: ' + profErr.message);
                 await sb.auth.signOut();
                 btn.disabled = false; btn.textContent = 'Přihlásit se →';
                 return;
             }
             if (!profile || profile.username !== 'admin') {
                 await sb.auth.signOut();
-                showErr('❌ Nemáš administrátorská práva (username není "admin")');
+                showErr('❌ Username není "admin", je: ' + (profile?.username || 'nenalezen'));
                 btn.disabled = false; btn.textContent = 'Přihlásit se →';
                 return;
             }
