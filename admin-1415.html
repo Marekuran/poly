@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>PredictX — Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -34,7 +35,6 @@
             min-height: 100vh
         }
 
-        /* LOGIN OVERLAY */
         #login-overlay {
             position: fixed;
             inset: 0;
@@ -123,6 +123,12 @@
             .login-btn:hover {
                 background: #e0003a;
                 transform: translateY(-1px)
+            }
+
+            .login-btn:disabled {
+                opacity: .5;
+                cursor: not-allowed;
+                transform: none
             }
 
         .login-err {
@@ -308,6 +314,12 @@
             transform: scale(.98)
         }
 
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none !important
+        }
+
         .m-card {
             background: var(--surface2);
             border: 1px solid var(--border);
@@ -430,13 +442,18 @@
             transition: all .15s
         }
 
+            .m-btn:disabled {
+                opacity: .5;
+                cursor: not-allowed
+            }
+
         .m-btn-yes {
             background: var(--green-dim);
             border: 1px solid var(--green);
             color: var(--green)
         }
 
-            .m-btn-yes:hover {
+            .m-btn-yes:hover:not(:disabled) {
                 background: var(--green);
                 color: #000
             }
@@ -447,7 +464,7 @@
             color: var(--red)
         }
 
-            .m-btn-no:hover {
+            .m-btn-no:hover:not(:disabled) {
                 background: var(--red);
                 color: #fff
             }
@@ -458,7 +475,7 @@
             color: var(--muted)
         }
 
-            .m-btn-del:hover {
+            .m-btn-del:hover:not(:disabled) {
                 border-color: var(--red);
                 color: var(--red)
             }
@@ -559,9 +576,18 @@
             border-radius: 20px;
             margin-left: 6px;
         }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            font-size: 11px
+        }
     </style>
 </head>
 <body>
+
     <!-- LOGIN -->
     <div id="login-overlay">
         <div class="login-box">
@@ -569,15 +595,15 @@
             <div class="login-title">Admin Panel</div>
             <div class="login-sub">Přístup pouze pro administrátory</div>
             <div class="login-field">
-                <label>Uživatelské jméno</label>
-                <input id="login-user" type="text" placeholder="admin" autocomplete="username">
+                <label>Email (admin účet)</label>
+                <input id="login-email" type="email" placeholder="admin@predictx.com" autocomplete="username">
             </div>
             <div class="login-field">
                 <label>Heslo</label>
                 <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
             </div>
-            <button class="login-btn" onclick="doLogin()">Přihlásit se →</button>
-            <div class="login-err" id="login-err">❌ Špatné jméno nebo heslo</div>
+            <button class="login-btn" id="login-btn" onclick="doLogin()">Přihlásit se →</button>
+            <div class="login-err" id="login-err"></div>
         </div>
     </div>
 
@@ -610,7 +636,7 @@
                     <label>Počáteční likvidita NO ($)</label>
                     <input id="startNo" type="number" value="50" min="0">
                 </div>
-                <button class="btn btn-primary" onclick="create()">+ Vytvořit trh</button>
+                <button class="btn btn-primary" id="create-btn" onclick="createMarket()">+ Vytvořit trh</button>
             </div>
         </div>
 
@@ -618,123 +644,173 @@
             <div class="panel-header">Přehled</div>
             <div class="panel-body">
                 <div class="stats-grid">
-                    <div class="big-stat"><div class="label">TRHY</div><div class="value" id="stat-total">0</div></div>
-                    <div class="big-stat"><div class="label">AKTIVNÍ</div><div class="value" id="stat-active" style="color:var(--green)">0</div></div>
-                    <div class="big-stat"><div class="label">CELK. OBJEM</div><div class="value" id="stat-vol" style="color:var(--yellow)">$0</div></div>
-                    <div class="big-stat"><div class="label">UZAVŘENÉ</div><div class="value" id="stat-closed" style="color:var(--muted)">0</div></div>
+                    <div class="big-stat"><div class="label">TRHY</div><div class="value" id="stat-total">—</div></div>
+                    <div class="big-stat"><div class="label">AKTIVNÍ</div><div class="value" id="stat-active" style="color:var(--green)">—</div></div>
+                    <div class="big-stat"><div class="label">CELK. OBJEM</div><div class="value" id="stat-vol" style="color:var(--yellow)">—</div></div>
+                    <div class="big-stat"><div class="label">UZAVŘENÉ</div><div class="value" id="stat-closed" style="color:var(--muted)">—</div></div>
                 </div>
             </div>
         </div>
 
         <div class="panel full">
             <div class="panel-header">Trhy <span class="count" id="market-count">0</span></div>
-            <div class="panel-body" id="list"><div class="empty-state">Zatím žádné trhy</div></div>
+            <div class="panel-body" id="list"><div class="empty-state">Přihlašte se pro zobrazení trhů</div></div>
         </div>
     </div>
 
     <div class="notif" id="notif"></div>
 
     <script>
-        // ─── AUTH CONFIG — tady pridavat hesla a nicky ───────────────────────────────────────────
-        const ADMIN_USERNAME = "admin";
-        const ADMIN_PASSWORD = "predictx2025";
-        // ───────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════
+        // SUPABASE
+        // ═══════════════════════════════════════════════════
+        const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkanloYXdxYWdhcXp4cnJ4a2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODAxOTQsImV4cCI6MjA5NDM1NjE5NH0.pHBFtJgq6JPd7QLmeRHeFqrS6rfnVQ-VAojhEduq3qU';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function doLogin() {
-            let u = document.getElementById("login-user").value.trim();
-            let p = document.getElementById("login-pass").value;
-            if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
-                sessionStorage.setItem("admin_auth", "1");
-                document.getElementById("login-overlay").style.display = "none";
-                render();
-            } else {
-                document.getElementById("login-err").style.display = "block";
-                document.getElementById("login-pass").value = "";
+        let currentUser = null;
+        let currentProfile = null;
+        let markets = [];
+
+        // ═══════════════════════════════════════════════════
+        // AUTH — admin se přihlásí přes Supabase Auth
+        // username = 'admin' v profiles tabulce = admin přístup
+        // ═══════════════════════════════════════════════════
+        async function doLogin() {
+            let email = document.getElementById('login-email').value.trim();
+            let pass = document.getElementById('login-pass').value;
+            if (!email || !pass) { showErr('Vyplň email a heslo'); return; }
+            let btn = document.getElementById('login-btn');
+            btn.disabled = true; btn.textContent = 'Přihlašuji...';
+            let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+            if (error) {
+                showErr('❌ ' + error.message);
+                btn.disabled = false; btn.textContent = 'Přihlásit se →';
+                return;
             }
+            // Verify admin role
+            let { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+            if (!profile || profile.username !== 'admin') {
+                await sb.auth.signOut();
+                showErr('❌ Nemáš administrátorská práva');
+                btn.disabled = false; btn.textContent = 'Přihlásit se →';
+                return;
+            }
+            currentUser = data.user;
+            currentProfile = profile;
+            document.getElementById('login-overlay').style.display = 'none';
+            btn.disabled = false; btn.textContent = 'Přihlásit se →';
+            await loadAndRender();
+            setupRealtime();
         }
 
-        document.getElementById("login-user").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("login-pass").focus(); });
-        document.getElementById("login-pass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+        document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+        document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
 
-        function doLogout() {
-            sessionStorage.removeItem("admin_auth");
-            document.getElementById("login-overlay").style.display = "flex";
+        async function doLogout() {
+            await sb.auth.signOut();
+            currentUser = null; currentProfile = null;
+            document.getElementById('login-overlay').style.display = 'flex';
+            document.getElementById('list').innerHTML = '<div class="empty-state">Přihlašte se pro zobrazení trhů</div>';
         }
 
-        // Check session on load
-        if (sessionStorage.getItem("admin_auth") === "1") {
-            document.getElementById("login-overlay").style.display = "none";
+        function showErr(msg) {
+            let el = document.getElementById('login-err');
+            el.textContent = msg; el.style.display = 'block';
         }
 
-        const load = () => JSON.parse(localStorage.getItem("markets") || "[]");
-        const save = m => localStorage.setItem("markets", JSON.stringify(m));
-        let markets = load();
-
-        function notify(msg, isErr) {
-            let el = document.getElementById("notif");
-            el.textContent = msg;
-            el.style.background = isErr ? "var(--red)" : "var(--green)";
-            el.style.color = isErr ? "#fff" : "#000";
-            el.classList.add("show");
-            clearTimeout(el._t);
-            el._t = setTimeout(() => el.classList.remove("show"), 2500);
-        }
-
-        window.create = function () {
-            if (sessionStorage.getItem("admin_auth") !== "1") return;
-            let q = document.getElementById("q").value.trim();
-            if (!q) { notify("Zadej otázku!", true); return; }
-            let sy = Number(document.getElementById("startYes").value) || 50;
-            let sn = Number(document.getElementById("startNo").value) || 50;
-            let dlVal = document.getElementById("deadline").value;
-            let deadline = dlVal ? new Date(dlVal).getTime() : null;
-            let m = load();
-            m.push({
-                id: Date.now(), q, yes: sy, no: sn,
-                p: sy / (sy + sn),
-                hist: [{ p: sy / (sy + sn), yes: sy, no: sn, t: Date.now() }],
-                chat: [], closed: false, result: null,
-                deadline: deadline,
-                createdAt: Date.now(),
-                creatorName: null,
-                creatorFee: 0
-            });
-            save(m); markets = m;
-            document.getElementById("q").value = "";
-            document.getElementById("deadline").value = "";
-            notify("Trh vytvořen! ✓");
-            render();
-        };
-
-        window.closeMarket = function (id, res) {
-            let m = load(), x = m.find(a => a.id == id);
-            if (!x) return;
-            x.closed = true; x.result = res;
-            // Pay creator fee if applicable
-            if (x.creatorName && x.creatorFee > 0) {
-                let lb = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-                let creator = lb.find(e => e.name === x.creatorName);
-                if (creator) {
-                    creator.balance = (creator.balance || 0) + x.creatorFee;
-                    localStorage.setItem("leaderboard", JSON.stringify(lb));
+        // ═══════════════════════════════════════════════════
+        // CHECK SESSION ON LOAD
+        // ═══════════════════════════════════════════════════
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                let { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+                if (profile && profile.username === 'admin') {
+                    currentUser = session.user;
+                    currentProfile = profile;
+                    document.getElementById('login-overlay').style.display = 'none';
+                    await loadAndRender();
+                    setupRealtime();
                 }
             }
-            save(m); markets = m;
-            notify(`Trh uzavřen: ${res.toUpperCase()}`);
-            render();
-        };
+        });
 
-        window.deleteMarket = function (id) {
-            if (!confirm("Smazat tento trh?")) return;
-            let m = load().filter(a => a.id != id);
-            save(m); markets = m;
-            notify("Trh smazán");
+        // ═══════════════════════════════════════════════════
+        // MARKETS
+        // ═══════════════════════════════════════════════════
+        async function loadAndRender() {
+            document.getElementById('list').innerHTML = '<div class="loading">⏳ Načítám trhy...</div>';
+            let { data, error } = await sb.from('markets').select('*, profiles(username)').order('created_at', { ascending: false });
+            if (error) { notify('❌ Chyba: ' + error.message, true); return; }
+            markets = data || [];
             render();
-        };
+        }
 
+        async function createMarket() {
+            if (!currentUser) return;
+            let q = document.getElementById('q').value.trim();
+            if (!q) { notify('Zadej otázku!', true); return; }
+            let sy = Number(document.getElementById('startYes').value) || 50;
+            let sn = Number(document.getElementById('startNo').value) || 50;
+            let dlVal = document.getElementById('deadline').value;
+            let deadline = dlVal ? new Date(dlVal).toISOString() : null;
+            let btn = document.getElementById('create-btn');
+            btn.disabled = true; btn.textContent = '⏳ Vytvářím...';
+            let { error } = await sb.from('markets').insert({
+                question: q, yes_pool: sy, no_pool: sn,
+                prob: sy / (sy + sn), deadline, is_admin_market: true,
+                creator_id: currentUser.id, creator_name: 'admin'
+            });
+            if (error) { notify('❌ ' + error.message, true); }
+            else {
+                document.getElementById('q').value = '';
+                document.getElementById('deadline').value = '';
+                notify('Trh vytvořen! ✓');
+                await loadAndRender();
+            }
+            btn.disabled = false; btn.textContent = '+ Vytvořit trh';
+        }
+
+        async function resolveMarket(id, result) {
+            let card = document.getElementById('mcard-' + id);
+            if (card) {
+                let btns = card.querySelectorAll('.m-btn');
+                btns.forEach(b => b.disabled = true);
+            }
+            let { error } = await sb.rpc('resolve_market', { p_market_id: id, p_result: result });
+            if (error) {
+                notify('❌ ' + error.message, true);
+                if (card) card.querySelectorAll('.m-btn').forEach(b => b.disabled = false);
+            } else {
+                notify(`Trh uzavřen: ${result.toUpperCase()}`);
+                await loadAndRender();
+            }
+        }
+
+        async function deleteMarket(id) {
+            if (!confirm('Smazat tento trh? Tato akce je nevratná.')) return;
+            // First delete related bets and history (cascade should handle it via FK, but just in case)
+            let { error } = await sb.from('markets').delete().eq('id', id);
+            if (error) { notify('❌ ' + error.message, true); }
+            else { notify('Trh smazán'); await loadAndRender(); }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // REALTIME
+        // ═══════════════════════════════════════════════════
+        function setupRealtime() {
+            sb.channel('admin:markets')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, async () => {
+                    await loadAndRender();
+                }).subscribe();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // RENDER
+        // ═══════════════════════════════════════════════════
         function dlInfo(deadline) {
             if (!deadline) return null;
-            let diff = deadline - Date.now();
+            let diff = new Date(deadline) - new Date();
             if (diff <= 0) return { text: '⏱ EXPIRED — sázení uzavřeno', cls: 'urgent' };
             let d = Math.floor(diff / 86400000), h = Math.floor(diff / 3600000), mn = Math.floor((diff % 3600000) / 60000);
             if (d > 1) return { text: `⏱ ${d}d ${h % 24}h left`, cls: '' };
@@ -743,52 +819,55 @@
         }
 
         function render() {
-            markets = load();
             let active = markets.filter(m => !m.closed).length;
             let closed = markets.filter(m => m.closed).length;
-            let vol = markets.reduce((s, m) => s + (m.yes || 0) + (m.no || 0), 0);
-            document.getElementById("stat-total").textContent = markets.length;
-            document.getElementById("stat-active").textContent = active;
-            document.getElementById("stat-closed").textContent = closed;
-            document.getElementById("stat-vol").textContent = "$" + vol.toFixed(0);
-            document.getElementById("market-count").textContent = markets.length;
-            let el = document.getElementById("list");
+            let vol = markets.reduce((s, m) => s + (m.yes_pool || 0) + (m.no_pool || 0), 0);
+            document.getElementById('stat-total').textContent = markets.length;
+            document.getElementById('stat-active').textContent = active;
+            document.getElementById('stat-closed').textContent = closed;
+            document.getElementById('stat-vol').textContent = '$' + vol.toFixed(0);
+            document.getElementById('market-count').textContent = markets.length;
+            let el = document.getElementById('list');
             if (!markets.length) { el.innerHTML = '<div class="empty-state">Zatím žádné trhy</div>'; return; }
-            let sorted = [...markets].reverse();
-            el.innerHTML = sorted.map(m => {
-                let t = (m.yes || 0) + (m.no || 0), p = t ? m.yes / t : 0.5;
+            el.innerHTML = markets.map(m => {
+                let t = (m.yes_pool || 0) + (m.no_pool || 0), p = t ? m.yes_pool / t : 0.5;
                 let pYes = (p * 100).toFixed(1);
                 let dl = dlInfo(m.deadline);
-                let isExpired = m.deadline && Date.now() > m.deadline;
-                let creatorInfo = m.creatorName ? `<div class="m-creator">👤 Vytvořil: ${m.creatorName} · poplatek: $${(m.creatorFee || 0).toFixed(2)}</div>` : '';
-                return `<div class="m-card">
-                        <div class="m-q">${m.q}${isExpired && !m.closed ? '<span class="locked-badge">⏱ LOCKED</span>' : ''}</div>
-                        ${creatorInfo}
-                        ${dl ? `<div class="m-deadline ${dl.cls}">${dl.text}</div>` : ''}
-                        <div class="m-stats">
-                            <div class="stat"><div class="label">YES pool</div><div class="val val-yes">$${(m.yes || 0).toFixed(1)}</div></div>
-                            <div class="stat"><div class="label">NO pool</div><div class="val val-no">$${(m.no || 0).toFixed(1)}</div></div>
-                            <div class="stat"><div class="label">Prob</div><div class="val val-yes">${pYes}%</div></div>
-                            <div class="stat"><div class="label">Volume</div><div class="val val-vol">$${t.toFixed(0)}</div></div>
-                        </div>
-                        <div class="m-bar-wrap"><div class="m-bar-fill" style="width:${pYes}%"></div></div>
-                        ${m.closed
-                        ? `<span class="closed-badge ${m.result === "yes" ? "badge-yes" : "badge-no"}">✓ UZAVŘENO — ${m.result.toUpperCase()}</span>
-                               <button class="m-btn m-btn-del" style="margin-top:8px;width:100%" onclick="deleteMarket(${m.id})">Smazat</button>`
+                let isExpired = m.deadline && new Date(m.deadline) < new Date();
+                let creatorInfo = m.creator_name ? `<div class="m-creator">👤 Vytvořil: ${m.creator_name} · poplatek: $${(m.creator_fee_earned || 0).toFixed(2)}</div>` : '';
+                return `<div class="m-card" id="mcard-${m.id}">
+                <div class="m-q">${m.question}${isExpired && !m.closed ? '<span class="locked-badge">⏱ LOCKED</span>' : ''}</div>
+                ${creatorInfo}
+                ${dl ? `<div class="m-deadline ${dl.cls}">${dl.text}</div>` : ''}
+                <div class="m-stats">
+                    <div class="stat"><div class="label">YES pool</div><div class="val val-yes">$${(m.yes_pool || 0).toFixed(1)}</div></div>
+                    <div class="stat"><div class="label">NO pool</div><div class="val val-no">$${(m.no_pool || 0).toFixed(1)}</div></div>
+                    <div class="stat"><div class="label">Prob</div><div class="val val-yes">${pYes}%</div></div>
+                    <div class="stat"><div class="label">Volume</div><div class="val val-vol">$${t.toFixed(0)}</div></div>
+                </div>
+                <div class="m-bar-wrap"><div class="m-bar-fill" style="width:${pYes}%"></div></div>
+                ${m.closed
+                        ? `<span class="closed-badge ${m.result === 'yes' ? 'badge-yes' : 'badge-no'}">✓ UZAVŘENO — ${(m.result || '').toUpperCase()}</span>
+                       <button class="m-btn m-btn-del" style="margin-top:8px;width:100%" onclick="deleteMarket(${m.id})">Smazat</button>`
                         : `<div class="m-actions">
-                                <button class="m-btn m-btn-yes" onclick="closeMarket(${m.id},'yes')">✓ Resolve YES</button>
-                                <button class="m-btn m-btn-no" onclick="closeMarket(${m.id},'no')">✗ Resolve NO</button>
-                                <button class="m-btn m-btn-del" onclick="deleteMarket(${m.id})">🗑</button>
-                               </div>`
+                        <button class="m-btn m-btn-yes" onclick="resolveMarket(${m.id},'yes')">✓ Resolve YES</button>
+                        <button class="m-btn m-btn-no" onclick="resolveMarket(${m.id},'no')">✗ Resolve NO</button>
+                        <button class="m-btn m-btn-del" onclick="deleteMarket(${m.id})">🗑</button>
+                       </div>`
                     }
-                    </div>`;
-            }).join("");
+            </div>`;
+            }).join('');
         }
 
-        window.addEventListener("storage", e => { if (e.key === "markets") { markets = load(); render(); } });
-        setInterval(() => { markets = load(); render(); }, 1500);
-        render();
+        function notify(msg, isErr) {
+            let el = document.getElementById('notif');
+            el.textContent = msg;
+            el.style.background = isErr ? 'var(--red)' : 'var(--green)';
+            el.style.color = isErr ? '#fff' : '#000';
+            el.classList.add('show');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.remove('show'), 2500);
+        }
     </script>
 </body>
 </html>
-s
