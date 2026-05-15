@@ -682,20 +682,29 @@
             if (!email || !pass) { showErr('Vyplň email a heslo'); return; }
             let btn = document.getElementById('login-btn');
             btn.disabled = true; btn.textContent = 'Přihlašuji...';
+
             let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
             if (error) {
                 showErr('❌ ' + error.message);
                 btn.disabled = false; btn.textContent = 'Přihlásit se →';
                 return;
             }
-            // Verify admin role
-            let { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
-            if (!profile || profile.username !== 'admin') {
+
+            // Verify admin role — use the session token that was just set
+            let { data: profile, error: profErr } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+            if (profErr) {
+                showErr('❌ Chyba při načítání profilu: ' + profErr.message);
                 await sb.auth.signOut();
-                showErr('❌ Nemáš administrátorská práva');
                 btn.disabled = false; btn.textContent = 'Přihlásit se →';
                 return;
             }
+            if (!profile || profile.username !== 'admin') {
+                await sb.auth.signOut();
+                showErr('❌ Nemáš administrátorská práva (username není "admin")');
+                btn.disabled = false; btn.textContent = 'Přihlásit se →';
+                return;
+            }
+
             currentUser = data.user;
             currentProfile = profile;
             document.getElementById('login-overlay').style.display = 'none';
@@ -720,9 +729,10 @@
         }
 
         // ═══════════════════════════════════════════════════
-        // CHECK SESSION ON LOAD
+        // CHECK SESSION ON LOAD (obnoví session po refreshi)
         // ═══════════════════════════════════════════════════
-        sb.auth.onAuthStateChange(async (event, session) => {
+        (async () => {
+            let { data: { session } } = await sb.auth.getSession();
             if (session?.user) {
                 let { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
                 if (profile && profile.username === 'admin') {
@@ -731,9 +741,11 @@
                     document.getElementById('login-overlay').style.display = 'none';
                     await loadAndRender();
                     setupRealtime();
+                } else {
+                    await sb.auth.signOut();
                 }
             }
-        });
+        })();
 
         // ═══════════════════════════════════════════════════
         // MARKETS
