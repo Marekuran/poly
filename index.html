@@ -1184,7 +1184,14 @@
     <header>
         <div class="logo"><div class="logo-dot"></div>PREDICTX</div>
         <div class="header-right">
-            <button class="add-btn" onclick="openPayModal()">+ Dobít</button>
+            <div style="position:relative;display:inline-block;">
+                <button class="add-btn" onclick="openPayModal()" style="opacity:.55;cursor:not-allowed">+ Dobít</button>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:20px;pointer-events:none;">
+                    <div style="background:repeating-linear-gradient(-45deg,rgba(245,166,35,.85) 0px,rgba(245,166,35,.85) 6px,rgba(0,0,0,.7) 6px,rgba(0,0,0,.7) 12px);width:200%;height:100%;position:absolute;"></div>
+                    <span style="position:relative;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#000;letter-spacing:1px;white-space:nowrap;text-shadow:0 0 4px rgba(255,255,255,.5)">WORK IN PROGRESS</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="openMoneyModal()" style="background:rgba(59,130,246,.15);border-color:var(--blue);color:var(--blue);">💰 Make Money</button>
             <div class="balance-pill" onclick="openPayModal()">
                 <span class="lbl">BALANCE</span>
                 <span class="amt" id="bal">—</span>
@@ -1198,6 +1205,7 @@
         <div class="tab active" onclick="switchTab('markets')">⬤ MARKETS</div>
         <div class="tab" onclick="switchTab('mymarkets')">🏗 MÉ TRHY</div>
         <div class="tab" onclick="switchTab('leaderboard')">🏆 LEADERBOARD</div>
+        <div class="tab" onclick="switchTab('earn')">💰 EARN</div>
     </div>
 
     <div id="tab-markets" class="tab-content active">
@@ -1216,6 +1224,41 @@
     </div>
     <div id="tab-leaderboard" class="tab-content">
         <div class="lb-container" id="lb-container"></div>
+    </div>
+    <div id="tab-earn" class="tab-content">
+        <div class="container" style="padding-top:20px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 20px 10px">
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:6px">VYDĚLEJ PENÍZE</div>
+                <div style="font-size:15px;font-weight:600;margin-bottom:4px">Vyřeš příklady · Získej $</div>
+                <div style="font-size:12px;color:var(--muted);font-family:'Space Mono',monospace">každý správný příklad = <span style="color:var(--green);font-weight:700">+$100</span></div>
+            </div>
+            <div id="math-area" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center">
+                <div id="math-question" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;margin-bottom:20px;color:var(--text)">—</div>
+                <input id="math-answer" type="number" placeholder="Tvoje odpověď" style="width:100%;max-width:280px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:18px;text-align:center;outline:none;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;">
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                    <button onclick="checkMath()" style="padding:10px 28px;background:var(--green-dim);border:1px solid var(--green);color:var(--green);border-radius:10px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--green)';this.style.color='#000'" onmouseout="this.style.background='var(--green-dim)';this.style.color='var(--green)'">✓ Potvrdit</button>
+                    <button onclick="skipMath()" style="padding:10px 20px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);border-radius:10px;font-family:'Space Mono',monospace;font-size:13px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">↷ Přeskočit</button>
+                </div>
+                <div id="math-feedback" style="margin-top:16px;font-family:'Space Mono',monospace;font-size:13px;min-height:20px"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">DNEŠNÍ SKÓRE</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">SPRÁVNĚ</div>
+                        <div id="math-correct" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--green)">0</div>
+                    </div>
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">ŠPATNĚ</div>
+                        <div id="math-wrong" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--red)">0</div>
+                    </div>
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">VYDĚLÁNO</div>
+                        <div id="math-earned" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--yellow)">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="notif" id="notif"></div>
@@ -1838,11 +1881,12 @@
         // TABS / MODALS / HELPERS
         // ═══════════════════════════════════════════════════
         function switchTab(t) {
-            document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['markets', 'mymarkets', 'leaderboard'][i] === t));
+            document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['markets', 'mymarkets', 'leaderboard', 'earn'][i] === t));
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + t).classList.add('active');
             if (t === 'leaderboard') renderLeaderboard();
             if (t === 'mymarkets') renderMyMarkets();
+            if (t === 'earn' && !currentMath) loadMath();
         }
         function openPayModal() { document.getElementById('pay-modal').classList.add('open') }
         function openCreateMarket() { document.getElementById('create-market-modal').classList.add('open') }
@@ -1872,7 +1916,108 @@
         // ═══════════════════════════════════════════════════
         // INIT
         // ═══════════════════════════════════════════════════
-        sb.auth.onAuthStateChange(async (event, session) => {
+        // ═══════════════════════════════════════════════════
+        // EARN / MATH
+        // ═══════════════════════════════════════════════════
+        let mathCorrect = 0, mathWrong = 0, mathEarned = 0;
+        let currentMath = null;
+
+        function genMath() {
+            let types = ['add', 'sub', 'mul', 'div', 'pct', 'sqrt', 'pow'];
+            let difficulty = Math.min(Math.floor((mathCorrect) / 3), 4); // gets harder
+            let type = types[Math.floor(Math.random() * Math.min(3 + difficulty, types.length))];
+            let a, b, ans, q;
+            if (type === 'add') {
+                a = Math.floor(Math.random() * (50 * (difficulty + 1))) + 1;
+                b = Math.floor(Math.random() * (50 * (difficulty + 1))) + 1;
+                ans = a + b; q = `${a} + ${b} = ?`;
+            } else if (type === 'sub') {
+                a = Math.floor(Math.random() * 200) + 50;
+                b = Math.floor(Math.random() * a) + 1;
+                ans = a - b; q = `${a} − ${b} = ?`;
+            } else if (type === 'mul') {
+                a = Math.floor(Math.random() * (8 + difficulty * 4)) + 2;
+                b = Math.floor(Math.random() * (8 + difficulty * 4)) + 2;
+                ans = a * b; q = `${a} × ${b} = ?`;
+            } else if (type === 'div') {
+                b = Math.floor(Math.random() * 11) + 2;
+                ans = Math.floor(Math.random() * 20) + 1;
+                a = b * ans; q = `${a} ÷ ${b} = ?`;
+            } else if (type === 'pct') {
+                let pcts = [10, 20, 25, 50, 5, 15];
+                let pct = pcts[Math.floor(Math.random() * pcts.length)];
+                a = (Math.floor(Math.random() * 19) + 1) * 4;
+                ans = Math.round(a * pct / 100);
+                q = `${pct}% z ${a} = ?`;
+            } else if (type === 'sqrt') {
+                let bases = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169];
+                let base = bases[Math.floor(Math.random() * bases.length)];
+                ans = Math.sqrt(base); q = `√${base} = ?`;
+            } else {
+                a = Math.floor(Math.random() * 8) + 2;
+                b = Math.floor(Math.random() * 3) + 2;
+                ans = Math.pow(a, b); q = `${a}^${b} = ?`;
+            }
+            return { q, ans: Math.round(ans * 100) / 100 };
+        }
+
+        function loadMath() {
+            currentMath = genMath();
+            document.getElementById('math-question').textContent = currentMath.q;
+            document.getElementById('math-answer').value = '';
+            document.getElementById('math-feedback').textContent = '';
+            document.getElementById('math-feedback').style.color = '';
+            document.getElementById('math-answer').focus();
+        }
+
+        async function checkMath() {
+            if (!currentMath) return;
+            let inp = document.getElementById('math-answer').value.trim();
+            if (inp === '') return;
+            let userAns = parseFloat(inp);
+            let fb = document.getElementById('math-feedback');
+            if (Math.abs(userAns - currentMath.ans) < 0.01) {
+                mathCorrect++;
+                mathEarned += 100;
+                document.getElementById('math-correct').textContent = mathCorrect;
+                document.getElementById('math-earned').textContent = '$' + mathEarned;
+                fb.textContent = '✓ Správně! +$100';
+                fb.style.color = 'var(--green)';
+                // Add to balance in Supabase
+                if (currentProfile) {
+                    let newBal = Number(currentProfile.balance) + 100;
+                    await sb.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+                    currentProfile.balance = newBal;
+                    document.getElementById('bal').textContent = newBal.toFixed(2);
+                }
+                setTimeout(loadMath, 900);
+            } else {
+                mathWrong++;
+                document.getElementById('math-wrong').textContent = mathWrong;
+                fb.textContent = `✗ Špatně! Správně bylo: ${currentMath.ans}`;
+                fb.style.color = 'var(--red)';
+                setTimeout(loadMath, 1400);
+            }
+        }
+
+        function skipMath() {
+            document.getElementById('math-feedback').textContent = `Přeskočeno (${currentMath.ans})`;
+            document.getElementById('math-feedback').style.color = 'var(--muted)';
+            setTimeout(loadMath, 800);
+        }
+
+        function openMoneyModal() { switchTab('earn'); }
+
+        // Enter key for math
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && document.getElementById('tab-earn').classList.contains('active')) {
+                checkMath();
+            }
+        });
+
+        // Obnov session po refreshi
+        (async () => {
+            let { data: { session } } = await sb.auth.getSession();
             if (session?.user) {
                 currentUser = session.user;
                 document.getElementById('auth-overlay').style.display = 'none';
@@ -1880,9 +2025,23 @@
                 await loadMyBets();
                 await loadMarkets();
                 setupRealtime();
-            } else {
+            }
+        })();
+
+        // Sleduj změny (login/logout)
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+                currentUser = session.user;
+                document.getElementById('auth-overlay').style.display = 'none';
+                await loadProfile();
+                await loadMyBets();
+                await loadMarkets();
+                setupRealtime();
+            } else if (event === 'SIGNED_OUT') {
                 currentUser = null; currentProfile = null;
+                markets = []; renderedIds = [];
                 document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('markets').innerHTML = '';
             }
         });
 
