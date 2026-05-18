@@ -1333,7 +1333,7 @@
         // ═══════════════════════════════════════════════════
         const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkanloYXdxYWdhcXp4cnJ4a2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODAxOTQsImV4cCI6MjA5NDM1NjE5NH0.pHBFtJgq6JPd7QLmeRHeFqrS6rfnVQ-VAojhEduq3qU';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
@@ -1376,6 +1376,7 @@
             btn.disabled = true; btn.textContent = 'Přihlašuji...';
             let { error } = await sb.auth.signInWithPassword({ email, password: pass });
             if (error) { setAuthErr('❌ ' + error.message); btn.disabled = false; btn.textContent = 'Přihlásit se →'; }
+            else { sessionStorage.setItem('px_email', email); sessionStorage.setItem('px_pass', pass); }
         }
 
         async function doRegister() {
@@ -1394,6 +1395,8 @@
 
         async function doLogout() {
             await sb.auth.signOut();
+            sessionStorage.removeItem('px_email');
+            sessionStorage.removeItem('px_pass');
             currentUser = null; currentProfile = null;
             document.getElementById('auth-overlay').style.display = 'flex';
         }
@@ -2032,6 +2035,21 @@
                 await loadMyBets();
                 await loadMarkets();
                 setupRealtime();
+                return;
+            }
+            // Fallback: auto re-login z sessionStorage
+            let email = sessionStorage.getItem('px_email');
+            let pass = sessionStorage.getItem('px_pass');
+            if (email && pass) {
+                let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+                if (!error && data.user) {
+                    currentUser = data.user;
+                    document.getElementById('auth-overlay').style.display = 'none';
+                    await loadProfile();
+                    await loadMyBets();
+                    await loadMarkets();
+                    setupRealtime();
+                }
             }
         }
         initAuth();
