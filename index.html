@@ -4,7 +4,2086 @@
     <meta charset="UTF-8">
     <title>PredictX — Market</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --bg: #060a0f;
+            --surface: #0d1420;
+            --surface2: #111d2e;
+            --border: #1a2840;
+            --border2: #1f3050;
+            --text: #e2eaf5;
+            --muted: #4a6080;
+            --green: #00d964;
+            --green-dim: #00d96422;
+            --red: #ff4466;
+            --red-dim: #ff446622;
+            --blue: #3b82f6;
+            --yellow: #f5a623;
+        }
+
+        body {
+            font-family: 'DM Sans',sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(6,10,15,.97);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+
+        .logo {
+            font-family: 'Space Mono',monospace;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .logo-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+            0%,100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .balance-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-family: 'Space Mono',monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+
+            .balance-pill:hover {
+                border-color: var(--green)
+            }
+
+            .balance-pill .lbl {
+                color: var(--muted);
+                font-size: 10px
+            }
+
+            .balance-pill .amt {
+                color: var(--green);
+                font-weight: 700
+            }
+
+        .add-btn {
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            cursor: pointer;
+            transition: all .15s;
+            font-weight: 700;
+        }
+
+            .add-btn:hover {
+                background: var(--green);
+                color: #000
+            }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 16px
+        }
+
+        .tab {
+            padding: 10px 18px;
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            letter-spacing: 1px;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all .2s
+        }
+
+            .tab.active {
+                color: var(--green);
+                border-bottom-color: var(--green)
+            }
+
+            .tab:hover:not(.active) {
+                color: var(--text)
+            }
+
+        .tab-content {
+            display: none
+        }
+
+            .tab-content.active {
+                display: block
+            }
+
+        .ticker {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 7px 16px;
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            color: var(--muted);
+            overflow: hidden;
+            white-space: nowrap
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: border-color .2s
+        }
+
+            .card:hover {
+                border-color: var(--border2)
+            }
+
+        .card-header {
+            padding: 16px 16px 10px
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 8px
+        }
+
+        .card-creator {
+            font-size: 10px;
+            font-family: 'Space Mono',monospace;
+            color: var(--yellow);
+            margin-bottom: 6px
+        }
+
+        .card-deadline {
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            color: var(--muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .deadline-urgent {
+            color: var(--red)
+        }
+
+        .deadline-soon {
+            color: var(--yellow)
+        }
+
+        .closed-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10px;
+            font-family: 'Space Mono',monospace;
+            padding: 2px 9px;
+            border-radius: 20px;
+            vertical-align: middle;
+            margin-left: 6px
+        }
+
+        .badge-yes {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid var(--green)
+        }
+
+        .badge-no {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid var(--red)
+        }
+
+        .locked-banner {
+            background: rgba(245,166,35,.08);
+            border: 1px solid rgba(245,166,35,.3);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            color: var(--yellow);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .prob-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 8px
+        }
+
+        .prob-big {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Space Mono',monospace
+        }
+
+        .prob-sides {
+            text-align: right;
+            font-family: 'Space Mono',monospace;
+            font-size: 12px;
+            line-height: 1.8
+        }
+
+        .py {
+            color: var(--green)
+        }
+
+        .pn {
+            color: var(--red)
+        }
+
+        .bar-wrap {
+            height: 6px;
+            background: var(--border);
+            border-radius: 20px;
+            overflow: hidden
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg,var(--green),#00ff88);
+            border-radius: 20px;
+            transition: width .7s cubic-bezier(.4,0,.2,1)
+        }
+
+        .vol-row {
+            display: flex;
+            gap: 14px;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap
+        }
+
+        .vol-item .v {
+            color: var(--text);
+            font-weight: 600
+        }
+
+        .chart-wrap {
+            padding: 8px 16px 4px;
+            position: relative
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100px
+        }
+
+        canvas.main-chart {
+            width: 100%;
+            height: 100px;
+            display: block;
+            border-radius: 8px
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(13,20,32,.95);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-family: 'Space Mono',monospace;
+            font-size: 11px;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+            min-width: 120px;
+            transform: translateX(-50%)
+        }
+
+            .chart-tooltip .tt-yes {
+                color: var(--green)
+            }
+
+            .chart-tooltip .tt-no {
+                color: var(--red)
+            }
+
+            .chart-tooltip .tt-time {
+                color: var(--muted);
+                font-size: 10px;
+                margin-bottom: 3px
+            }
+
+        .period-row {
+            display: flex;
+            gap: 4px;
+            padding: 6px 16px 2px;
+            flex-wrap: wrap
+        }
+
+        .period-btn {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-family: 'Space Mono',monospace;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .15s
+        }
+
+            .period-btn.active {
+                background: var(--green-dim);
+                border-color: var(--green);
+                color: var(--green)
+            }
+
+        .my-pos {
+            margin: 6px 16px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+        }
+
+        .pos-title {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase
+        }
+
+        .pos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px
+        }
+
+        .pos-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 10px
+        }
+
+            .pos-item .pi-label {
+                font-size: 9px;
+                color: var(--muted);
+                letter-spacing: 1px;
+                margin-bottom: 3px
+            }
+
+            .pos-item .pi-val {
+                font-size: 13px;
+                font-weight: 700
+            }
+
+        .pi-yes {
+            color: var(--green)
+        }
+
+        .pi-no {
+            color: var(--red)
+        }
+
+        .pi-vol {
+            color: var(--yellow)
+        }
+
+        .pi-shares {
+            color: var(--blue)
+        }
+
+        .amount-row {
+            display: flex;
+            gap: 6px;
+            padding: 8px 16px 4px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .amt-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+            .amt-btn:hover {
+                border-color: var(--green);
+                color: var(--green)
+            }
+
+            .amt-btn.active {
+                border-color: var(--green);
+                color: var(--green);
+                background: var(--green-dim)
+            }
+
+        .custom-amt-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 1;
+            min-width: 90px;
+            max-width: 140px
+        }
+
+        .custom-amt-input {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'Space Mono',monospace;
+            width: 100%;
+            outline: none;
+            transition: border-color .15s
+        }
+
+            .custom-amt-input:focus {
+                border-color: var(--blue)
+            }
+
+        .custom-lbl {
+            font-size: 10px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            margin-right: 4px;
+            white-space: nowrap
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            padding: 4px 16px 14px
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans',sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all .15s
+        }
+
+        .btn-yes {
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green)
+        }
+
+            .btn-yes:hover {
+                background: var(--green);
+                color: #000
+            }
+
+        .btn-no {
+            background: var(--red-dim);
+            border: 1px solid var(--red);
+            color: var(--red)
+        }
+
+            .btn-no:hover {
+                background: var(--red);
+                color: #fff
+            }
+
+        .btn:active {
+            transform: scale(.97)
+        }
+
+        .btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none !important
+        }
+
+        .chat-wrap {
+            border-top: 1px solid var(--border);
+            padding: 10px 16px 12px
+        }
+
+        .chat-label {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-family: 'Space Mono',monospace
+        }
+
+        .chat-msgs {
+            max-height: 88px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            scrollbar-width: none
+        }
+
+            .chat-msgs::-webkit-scrollbar {
+                display: none
+            }
+
+        .chat-msg {
+            font-size: 12px;
+            line-height: 1.5;
+            animation: msgIn .25s ease
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateX(-4px)
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .cn {
+            font-weight: 600;
+            margin-right: 4px
+        }
+
+        .ct {
+            color: var(--muted)
+        }
+        /* Auth overlay */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-box {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: 36px;
+            width: 360px;
+            max-width: 94vw;
+        }
+
+        .auth-logo {
+            font-family: 'Space Mono',monospace;
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: var(--green);
+            margin-bottom: 8px
+        }
+
+        .auth-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px
+        }
+
+        .auth-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 24px;
+            font-family: 'Space Mono',monospace
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            overflow: hidden
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            font-family: 'Space Mono',monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all .15s;
+            color: var(--muted)
+        }
+
+            .auth-tab.active {
+                background: var(--green-dim);
+                color: var(--green)
+            }
+
+        .afield {
+            margin-bottom: 14px
+        }
+
+            .afield label {
+                display: block;
+                font-size: 11px;
+                color: var(--muted);
+                margin-bottom: 5px;
+                font-family: 'Space Mono',monospace;
+                letter-spacing: .5px
+            }
+
+            .afield input {
+                width: 100%;
+                padding: 10px 13px;
+                background: var(--surface2);
+                border: 1px solid var(--border2);
+                border-radius: 10px;
+                color: var(--text);
+                font-family: 'DM Sans',sans-serif;
+                font-size: 14px;
+                outline: none;
+                transition: border-color .2s
+            }
+
+                .afield input:focus {
+                    border-color: var(--blue)
+                }
+
+        .abtn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans',sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            background: var(--green);
+            color: #000;
+            transition: all .15s
+        }
+
+            .abtn:hover {
+                background: #00b852
+            }
+
+            .abtn:disabled {
+                opacity: .5;
+                cursor: not-allowed
+            }
+
+        .auth-err {
+            color: var(--red);
+            font-size: 11px;
+            font-family: 'Space Mono',monospace;
+            margin-top: 8px;
+            display: none
+        }
+        /* LEADERBOARD */
+        .lb-container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px 16px
+        }
+
+        .lb-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .lb-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .lb-title {
+            font-family: 'Space Mono',monospace;
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--text)
+        }
+
+        .lb-subtitle {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace
+        }
+
+        .lb-row {
+            display: grid;
+            grid-template-columns: 36px 1fr 90px 80px 80px;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+            gap: 8px
+        }
+
+            .lb-row:last-child {
+                border-bottom: none
+            }
+
+            .lb-row:hover {
+                background: var(--surface2)
+            }
+
+            .lb-row.me {
+                background: rgba(0,217,100,.05);
+                border-left: 3px solid var(--green)
+            }
+
+        .lb-rank {
+            font-family: 'Space Mono',monospace;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center
+        }
+
+            .lb-rank.r1 {
+                color: #FFD700
+            }
+
+            .lb-rank.r2 {
+                color: #C0C0C0
+            }
+
+            .lb-rank.r3 {
+                color: #CD7F32
+            }
+
+        .lb-name {
+            font-weight: 600;
+            font-size: 14px
+        }
+
+            .lb-name .you-tag {
+                font-size: 10px;
+                color: var(--green);
+                font-family: 'Space Mono',monospace;
+                margin-left: 6px;
+                background: var(--green-dim);
+                padding: 1px 6px;
+                border-radius: 4px
+            }
+
+        .lb-col {
+            font-family: 'Space Mono',monospace;
+            font-size: 12px;
+            text-align: right
+        }
+
+            .lb-col.pos {
+                color: var(--green)
+            }
+
+            .lb-col.neg {
+                color: var(--red)
+            }
+
+        .lb-col-header {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: .5px
+        }
+
+        .lb-col-header-row {
+            display: grid;
+            grid-template-columns: 36px 1fr 90px 80px 80px;
+            padding: 8px 20px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2)
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            font-size: 12px
+        }
+
+        .notif {
+            position: fixed;
+            top: 68px;
+            right: 16px;
+            background: var(--green);
+            color: #000;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transform: translateY(-6px);
+            opacity: 0;
+            transition: all .3s;
+            pointer-events: none;
+            z-index: 200
+        }
+
+            .notif.show {
+                transform: translateY(0);
+                opacity: 1
+            }
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.75);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
+        }
+
+            .modal-overlay.open {
+                opacity: 1;
+                pointer-events: all
+            }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: 28px;
+            width: 360px;
+            max-width: 94vw;
+            transform: translateY(12px);
+            transition: transform .25s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0)
+        }
+
+        .modal-title {
+            font-family: 'Space Mono',monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 4px
+        }
+
+        .modal-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 22px;
+            font-family: 'Space Mono',monospace
+        }
+
+        .mfield {
+            margin-bottom: 14px
+        }
+
+            .mfield label {
+                display: block;
+                font-size: 11px;
+                color: var(--muted);
+                margin-bottom: 5px;
+                font-family: 'Space Mono',monospace;
+                letter-spacing: .5px
+            }
+
+            .mfield input, .mfield textarea {
+                width: 100%;
+                padding: 10px 13px;
+                background: var(--surface2);
+                border: 1px solid var(--border2);
+                border-radius: 10px;
+                color: var(--text);
+                font-family: 'DM Sans',sans-serif;
+                font-size: 14px;
+                outline: none;
+                transition: border-color .2s
+            }
+
+                .mfield input:focus, .mfield textarea:focus {
+                    border-color: var(--blue)
+                }
+
+                .mfield input[type="datetime-local"] {
+                    color-scheme: dark
+                }
+
+            .mfield textarea {
+                resize: vertical;
+                min-height: 65px
+            }
+
+        .card-row {
+            display: flex;
+            gap: 10px
+        }
+
+            .card-row .mfield {
+                flex: 1
+            }
+
+        .modal-hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            font-family: 'Space Mono',monospace
+        }
+
+        .modal-cost {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-family: 'Space Mono',monospace;
+            font-size: 12px
+        }
+
+            .modal-cost .mc-label {
+                color: var(--muted);
+                margin-bottom: 4px;
+                font-size: 10px
+            }
+
+            .modal-cost .mc-val {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--yellow)
+            }
+
+            .modal-cost .mc-note {
+                font-size: 10px;
+                color: var(--muted);
+                margin-top: 4px
+            }
+
+        .mbtn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans',sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all .15s;
+            margin-top: 4px
+        }
+
+        .mbtn-blue {
+            background: var(--blue);
+            color: #fff
+        }
+
+            .mbtn-blue:hover {
+                background: #2563eb
+            }
+
+        .mbtn-green {
+            background: var(--green);
+            color: #000
+        }
+
+            .mbtn-green:hover {
+                background: #00b852
+            }
+
+        .mbtn-cancel {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            margin-top: 8px
+        }
+
+            .mbtn-cancel:hover {
+                border-color: var(--red);
+                color: var(--red)
+            }
+
+        .card-number-wrap {
+            position: relative
+        }
+
+            .card-number-wrap input {
+                padding-right: 50px;
+                font-family: 'Space Mono',monospace;
+                letter-spacing: 2px
+            }
+
+        .card-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            pointer-events: none
+        }
+
+        .amounts-grid {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 6px;
+            margin-bottom: 14px
+        }
+
+        .amt-pill {
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Space Mono',monospace;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .15s
+        }
+
+            .amt-pill:hover {
+                border-color: var(--green);
+                color: var(--green)
+            }
+
+            .amt-pill.sel {
+                border-color: var(--green);
+                color: var(--green);
+                background: var(--green-dim)
+            }
+
+        .security-note {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: 'Space Mono',monospace;
+            margin-top: 10px
+        }
+
+        .spin {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,.2);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin .6s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH OVERLAY -->
+    <div id="auth-overlay">
+        <div class="auth-box">
+            <div class="auth-logo">⬤ PREDICTX</div>
+            <div class="auth-title">Vítej v PredictX</div>
+            <div class="auth-sub">Predikční trhy · simulované prostředí</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-login" onclick="authSwitch('login')">PŘIHLÁSIT</div>
+                <div class="auth-tab" id="tab-register" onclick="authSwitch('register')">REGISTROVAT</div>
+            </div>
+            <div id="auth-login-form">
+                <div class="afield"><label>Email</label><input id="a-email" type="email" placeholder="jan@example.com"></div>
+                <div class="afield"><label>Heslo</label><input id="a-pass" type="password" placeholder="••••••••"></div>
+                <button class="abtn" id="a-login-btn" onclick="doLogin()">Přihlásit se →</button>
+            </div>
+            <div id="auth-register-form" style="display:none">
+                <div class="afield"><label>Email</label><input id="r-email" type="email" placeholder="jan@example.com"></div>
+                <div class="afield"><label>Uživatelské jméno</label><input id="r-username" type="text" placeholder="jantrader42" maxlength="30"></div>
+                <div class="afield"><label>Heslo</label><input id="r-pass" type="password" placeholder="min. 6 znaků"></div>
+                <button class="abtn" id="a-reg-btn" onclick="doRegister()">Zaregistrovat se →</button>
+            </div>
+            <div class="auth-err" id="auth-err"></div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo"><div class="logo-dot"></div>PREDICTX</div>
+        <div class="header-right">
+            <div style="position:relative;display:inline-block;">
+                <button class="add-btn" onclick="openPayModal()" style="opacity:.55;cursor:not-allowed">+ Dobít</button>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:20px;pointer-events:none;">
+                    <div style="background:repeating-linear-gradient(-45deg,rgba(245,166,35,.85) 0px,rgba(245,166,35,.85) 6px,rgba(0,0,0,.7) 6px,rgba(0,0,0,.7) 12px);width:200%;height:100%;position:absolute;"></div>
+                    <span style="position:relative;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#000;letter-spacing:1px;white-space:nowrap;text-shadow:0 0 4px rgba(255,255,255,.5)">WORK IN PROGRESS</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="openMoneyModal()" style="background:rgba(59,130,246,.15);border-color:var(--blue);color:var(--blue);">💰 Make Money</button>
+            <div class="balance-pill" onclick="openPayModal()">
+                <span class="lbl">BALANCE</span>
+                <span class="amt" id="bal">—</span>
+                <span style="color:var(--muted);font-size:11px">$</span>
+            </div>
+            <button style="background:transparent;border:1px solid var(--border2);color:var(--muted);padding:4px 12px;border-radius:8px;font-size:11px;font-family:'Space Mono',monospace;cursor:pointer;" onclick="doLogout()">odhlásit</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('markets')">⬤ MARKETS</div>
+        <div class="tab" onclick="switchTab('mymarkets')">🏗 MÉ TRHY</div>
+        <div class="tab" onclick="switchTab('leaderboard')">🏆 LEADERBOARD</div>
+        <div class="tab" onclick="switchTab('earn')">💰 EARN</div>
+    </div>
+
+    <div id="tab-markets" class="tab-content active">
+        <div class="ticker" id="ticker">⬤ LIVE — načítám...</div>
+        <div class="container" id="markets"></div>
+    </div>
+    <div id="tab-mymarkets" class="tab-content">
+        <div class="container" style="padding-top:20px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
+                <div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;margin-bottom:4px">VYTVOŘ VLASTNÍ TRH</div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:16px">Zaplať 10 000 $ a stvoř svůj predikční trh. Dostaneš 10 % ze všech investic.</div>
+                <button class="mbtn mbtn-green" onclick="openCreateMarket()" style="max-width:300px">🏗 Vytvořit trh za 10 000 $</button>
+            </div>
+            <div id="my-markets-list"></div>
+        </div>
+    </div>
+    <div id="tab-leaderboard" class="tab-content">
+        <div class="lb-container" id="lb-container"></div>
+    </div>
+    <div id="tab-earn" class="tab-content">
+        <div class="container" style="padding-top:20px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 20px 10px">
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:6px">VYDĚLEJ PENÍZE</div>
+                <div style="font-size:15px;font-weight:600;margin-bottom:4px">Vyřeš příklady · Získej $</div>
+                <div style="font-size:12px;color:var(--muted);font-family:'Space Mono',monospace">každý správný příklad = <span style="color:var(--green);font-weight:700">+$100</span></div>
+            </div>
+            <div id="math-area" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center">
+                <div id="math-question" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;margin-bottom:20px;color:var(--text)">—</div>
+                <input id="math-answer" type="number" placeholder="Tvoje odpověď" style="width:100%;max-width:280px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Space Mono',monospace;font-size:18px;text-align:center;outline:none;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;">
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                    <button onclick="checkMath()" style="padding:10px 28px;background:var(--green-dim);border:1px solid var(--green);color:var(--green);border-radius:10px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--green)';this.style.color='#000'" onmouseout="this.style.background='var(--green-dim)';this.style.color='var(--green)'">✓ Potvrdit</button>
+                    <button onclick="skipMath()" style="padding:10px 20px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);border-radius:10px;font-family:'Space Mono',monospace;font-size:13px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">↷ Přeskočit</button>
+                </div>
+                <div id="math-feedback" style="margin-top:16px;font-family:'Space Mono',monospace;font-size:13px;min-height:20px"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">DNEŠNÍ SKÓRE</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">SPRÁVNĚ</div>
+                        <div id="math-correct" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--green)">0</div>
+                    </div>
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">ŠPATNĚ</div>
+                        <div id="math-wrong" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--red)">0</div>
+                    </div>
+                    <div style="flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+                        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px">VYDĚLÁNO</div>
+                        <div id="math-earned" style="font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--yellow)">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notif" id="notif"></div>
+
+    <!-- PAYMENT MODAL -->
+    <div class="modal-overlay" id="pay-modal">
+        <div class="modal">
+            <div class="modal-title">💳 DOBÍT KREDIT</div>
+            <div class="modal-sub">Simulovaná platba · PredictX Finance</div>
+            <div class="amounts-grid">
+                <div class="amt-pill" data-v="500" onclick="selTopup(500)">$500</div>
+                <div class="amt-pill sel" data-v="1000" onclick="selTopup(1000)">$1K</div>
+                <div class="amt-pill" data-v="5000" onclick="selTopup(5000)">$5K</div>
+                <div class="amt-pill" data-v="10000" onclick="selTopup(10000)">$10K</div>
+            </div>
+            <div class="mfield">
+                <label>Vlastní částka ($)</label>
+                <input id="topup-custom" type="number" min="1" placeholder="Zadej částku" oninput="selTopupCustom()">
+            </div>
+            <div class="mfield">
+                <label>Jméno na kartě</label>
+                <input id="card-name" type="text" placeholder="Jan Novák">
+            </div>
+            <div class="mfield">
+                <label>Číslo karty</label>
+                <div class="card-number-wrap">
+                    <input id="card-num" type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+                    <span class="card-icon" id="card-icon">💳</span>
+                </div>
+            </div>
+            <div class="card-row">
+                <div class="mfield"><label>Platnost (MM/YY)</label><input id="card-exp" type="text" placeholder="08/27" maxlength="5" oninput="formatExp(this)"></div>
+                <div class="mfield"><label>CVV</label><input id="card-cvv" type="text" placeholder="123" maxlength="4"></div>
+            </div>
+            <div class="security-note">🔒 Šifrováno 256-bit SSL · simulace</div>
+            <button class="mbtn mbtn-blue" onclick="doTopup()" style="margin-top:16px">Dobít kredit →</button>
+            <button class="mbtn mbtn-cancel" onclick="closeModal('pay-modal')">Zrušit</button>
+        </div>
+    </div>
+
+    <!-- CREATE MARKET MODAL -->
+    <div class="modal-overlay" id="create-market-modal">
+        <div class="modal">
+            <div class="modal-title">🏗 NOVÝ TRH</div>
+            <div class="modal-sub">Poplatek 10 000 $ · 10 % z objemu pro tebe</div>
+            <div class="modal-cost">
+                <div class="mc-label">CENA VYTVOŘENÍ</div>
+                <div class="mc-val">10 000 $</div>
+                <div class="mc-note">Dostaneš 10 % ze všech vsazených peněz</div>
+            </div>
+            <div class="mfield">
+                <label>Otázka trhu</label>
+                <textarea id="cm-q" placeholder="Např: Bude česká koruna pod 24 CZK/USD v Q1 2026?"></textarea>
+            </div>
+            <div class="mfield">
+                <label>Deadline (nepovinné)</label>
+                <input id="cm-deadline" type="datetime-local">
+                <div class="modal-hint">Po deadlinu bude sázení uzavřeno</div>
+            </div>
+            <div class="card-row">
+                <div class="mfield"><label>Start YES pool ($)</label><input id="cm-yes" type="number" value="100" min="0"></div>
+                <div class="mfield"><label>Start NO pool ($)</label><input id="cm-no" type="number" value="100" min="0"></div>
+            </div>
+            <button class="mbtn mbtn-green" onclick="doCreateMarket()">Vytvořit trh za 10 000 $ →</button>
+            <button class="mbtn mbtn-cancel" onclick="closeModal('create-market-modal')">Zrušit</button>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        // SUPABASE INIT
+        // ═══════════════════════════════════════════════════
+        const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkanloYXdxYWdhcXp4cnJ4a2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODAxOTQsImV4cCI6MjA5NDM1NjE5NH0.pHBFtJgq6JPd7QLmeRHeFqrS6rfnVQ-VAojhEduq3qU';
+        window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: false,
+                storageKey: 'sb-tdjyhawqagaqzxrrxkke-auth-token'
+            }
+        });
+
+        let currentUser = null;
+        let currentProfile = null;
+        let markets = [];
+        let myBets = {}; // { market_id: { yes_shares, no_shares, yes_invested, no_invested } }
+        let selectedAmt = {};
+        let selectedPeriod = {};
+        let topupAmount = 1000;
+        let renderedIds = [];
+        const AMOUNTS = [5, 10, 25, 50];
+
+        // ═══════════════════════════════════════════════════
+        // AUTH
+        // ═══════════════════════════════════════════════════
+        function authSwitch(mode) {
+            document.getElementById('auth-login-form').style.display = mode === 'login' ? '' : 'none';
+            document.getElementById('auth-register-form').style.display = mode === 'register' ? '' : 'none';
+            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+            document.getElementById('auth-err').style.display = 'none';
+        }
+
+        function setAuthErr(msg) {
+            let el = document.getElementById('auth-err');
+            el.textContent = msg; el.style.display = 'block';
+        }
+
+        async function doLogin() {
+            let email = document.getElementById('a-email').value.trim();
+            let pass = document.getElementById('a-pass').value;
+            if (!email || !pass) { setAuthErr('Vyplň email a heslo'); return; }
+            let btn = document.getElementById('a-login-btn');
+            btn.disabled = true; btn.textContent = 'Přihlašuji...';
+            let { error } = await sb.auth.signInWithPassword({ email, password: pass });
+            if (error) { setAuthErr('❌ ' + error.message); btn.disabled = false; btn.textContent = 'Přihlásit se →'; }
+            else { sessionStorage.setItem('px_email', email); sessionStorage.setItem('px_pass', pass); }
+        }
+
+        async function doRegister() {
+            let email = document.getElementById('r-email').value.trim();
+            let username = document.getElementById('r-username').value.trim();
+            let pass = document.getElementById('r-pass').value;
+            if (!email || !username || !pass) { setAuthErr('Vyplň všechna pole'); return; }
+            if (pass.length < 6) { setAuthErr('Heslo musí mít min. 6 znaků'); return; }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) { setAuthErr('Username: pouze písmena, čísla, podtržítko'); return; }
+            let btn = document.getElementById('a-reg-btn');
+            btn.disabled = true; btn.textContent = 'Registruji...';
+            let { error } = await sb.auth.signUp({ email, password: pass, options: { data: { username } } });
+            if (error) { setAuthErr('❌ ' + error.message); btn.disabled = false; btn.textContent = 'Zaregistrovat se →'; }
+            else { setAuthErr(''); btn.textContent = 'Zkontroluj email pro potvrzení!'; }
+        }
+
+        async function doLogout() {
+            await sb.auth.signOut();
+            sessionStorage.removeItem('px_email');
+            sessionStorage.removeItem('px_pass');
+            currentUser = null; currentProfile = null;
+            document.getElementById('auth-overlay').style.display = 'flex';
+        }
+
+        // ═══════════════════════════════════════════════════
+        // PROFILE / BALANCE
+        // ═══════════════════════════════════════════════════
+        async function loadProfile() {
+            if (!currentUser) return;
+            let { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+            if (data) {
+                currentProfile = data;
+                document.getElementById('bal').textContent = Number(data.balance).toFixed(2);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // MARKETS
+        // ═══════════════════════════════════════════════════
+        async function loadMarkets() {
+            let { data } = await sb.from('markets').select('*, profiles(username)').order('created_at', { ascending: false });
+            if (data) { markets = data; fullRender(); updateTicker(); }
+        }
+
+        async function loadMyBets() {
+            if (!currentUser) return;
+            let { data } = await sb.from('bets').select('*').eq('user_id', currentUser.id);
+            if (!data) return;
+            myBets = {};
+            data.forEach(b => {
+                if (!myBets[b.market_id]) myBets[b.market_id] = { yes: 0, no: 0, yesInvested: 0, noInvested: 0 };
+                myBets[b.market_id][b.side] = (myBets[b.market_id][b.side] || 0) + b.shares;
+                myBets[b.market_id][b.side + 'Invested'] = (myBets[b.market_id][b.side + 'Invested'] || 0) + b.amount;
+            });
+        }
+
+        async function loadHistory(marketId) {
+            let { data } = await sb.from('market_history').select('prob,yes_pool,no_pool,recorded_at')
+                .eq('market_id', marketId).order('recorded_at', { ascending: true }).limit(500);
+            return (data || []).map(h => ({ p: h.prob, yes: h.yes_pool, no: h.no_pool, t: new Date(h.recorded_at).getTime() }));
+        }
+
+        // ═══════════════════════════════════════════════════
+        // BET
+        // ═══════════════════════════════════════════════════
+        window.bet = async function (marketId, side) {
+            if (!currentUser) { notify('Nejsi přihlášen!'); return; }
+            let m = markets.find(x => x.id == marketId);
+            if (!m || m.closed) return;
+            if (m.deadline && new Date(m.deadline) < new Date()) { notify('⏱ Deadline vypršel!'); return; }
+            let invest = getAmt(marketId);
+            if (!invest || invest <= 0) { notify('Zadej platnou částku! 💸'); return; }
+            if (currentProfile && currentProfile.balance < invest) { notify('Nedostatek peněz! 💸'); return; }
+
+            let byBtn = document.getElementById(`btn-yes-${marketId}`);
+            let bnBtn = document.getElementById(`btn-no-${marketId}`);
+            if (byBtn) byBtn.disabled = true;
+            if (bnBtn) bnBtn.disabled = true;
+
+            let { data, error } = await sb.rpc('place_bet', { p_market_id: marketId, p_side: side, p_amount: invest });
+            if (error) {
+                notify('❌ ' + (error.message || 'Chyba při sázení'));
+            } else {
+                notify(`+${Number(data.shares).toFixed(2)} ${side.toUpperCase()} shares @ $${Number(data.price).toFixed(3)}`);
+                document.getElementById('bal').textContent = Number(data.new_balance).toFixed(2);
+                if (currentProfile) currentProfile.balance = data.new_balance;
+                await loadMyBets();
+                await loadMarkets();
+            }
+
+            if (byBtn) byBtn.disabled = false;
+            if (bnBtn) bnBtn.disabled = false;
+        };
+
+        // ═══════════════════════════════════════════════════
+        // TOPUP (simulace — přidá do balance přes update)
+        // ═══════════════════════════════════════════════════
+        async function doTopup() {
+            let name = document.getElementById('card-name').value.trim();
+            let num = document.getElementById('card-num').value.replace(/\s/g, '');
+            let exp = document.getElementById('card-exp').value.trim();
+            let cvv = document.getElementById('card-cvv').value.trim();
+            if (!name || num.length < 15 || !exp.match(/^\d{2}\/\d{2}$/) || cvv.length < 3) {
+                notify('⚠️ Vyplň správně všechny údaje!'); return;
+            }
+            let amt = topupAmount;
+            if (!amt || amt <= 0) { notify('⚠️ Zadej platnou částku!'); return; }
+            let btn = event.target;
+            btn.textContent = '⏳ Zpracovávám...'; btn.disabled = true;
+            setTimeout(async () => {
+                let newBal = (currentProfile ? Number(currentProfile.balance) : 1000) + amt;
+                let { error } = await sb.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+                if (!error) {
+                    if (currentProfile) currentProfile.balance = newBal;
+                    document.getElementById('bal').textContent = newBal.toFixed(2);
+                    closeModal('pay-modal');
+                    notify(`✅ Dobito $${amt.toLocaleString()}! Nový zůstatek: $${newBal.toFixed(2)}`);
+                } else {
+                    notify('❌ Chyba při dobití');
+                }
+                btn.textContent = 'Dobít kredit →'; btn.disabled = false;
+            }, 1500);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // CREATE MARKET
+        // ═══════════════════════════════════════════════════
+        async function doCreateMarket() {
+            if (!currentProfile) return;
+            if (currentProfile.balance < 10000) { notify('⚠️ Potřebuješ $10 000'); return; }
+            let q = document.getElementById('cm-q').value.trim();
+            if (!q) { notify('⚠️ Zadej otázku!'); return; }
+            let sy = Number(document.getElementById('cm-yes').value) || 100;
+            let sn = Number(document.getElementById('cm-no').value) || 100;
+            let dlVal = document.getElementById('cm-deadline').value;
+            let deadline = dlVal ? new Date(dlVal).toISOString() : null;
+
+            // Deduct balance
+            let newBal = Number(currentProfile.balance) - 10000;
+            await sb.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+            currentProfile.balance = newBal;
+            document.getElementById('bal').textContent = newBal.toFixed(2);
+
+            let { error } = await sb.from('markets').insert({
+                question: q, yes_pool: sy, no_pool: sn,
+                prob: sy / (sy + sn), deadline, is_admin_market: false,
+                creator_id: currentUser.id, creator_name: currentProfile.username
+            });
+            if (error) { notify('❌ ' + error.message); return; }
+            closeModal('create-market-modal');
+            document.getElementById('cm-q').value = '';
+            notify('🏗 Tvůj trh byl vytvořen!');
+            await loadMarkets();
+            switchTab('markets');
+        }
+
+        // ═══════════════════════════════════════════════════
+        // MY MARKETS
+        // ═══════════════════════════════════════════════════
+        function renderMyMarkets() {
+            let my = markets.filter(m => m.creator_id === currentUser?.id);
+            let el = document.getElementById('my-markets-list');
+            if (!my.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-family:Space Mono,monospace;font-size:12px">Zatím žádné tvoje trhy</div>'; return; }
+            el.innerHTML = my.map(m => {
+                let vol = (m.yes_pool || 0) + (m.no_pool || 0);
+                return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px">
+                    <div style="font-size:13px;font-weight:600;margin-bottom:6px">${m.question}</div>
+                    <div style="display:flex;gap:14px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">
+                        <span>OBJEM: <span style="color:var(--yellow)">$${vol.toFixed(0)}</span></span>
+                        <span>POPLATKY: <span style="color:var(--green)">$${(m.creator_fee_earned || 0).toFixed(2)}</span></span>
+                        <span>STATUS: <span style="color:${m.closed ? 'var(--muted)' : 'var(--green)'}">${m.closed ? 'UZAVŘENO' : 'AKTIVNÍ'}</span></span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════════════════
+        // LEADERBOARD
+        // ═══════════════════════════════════════════════════
+        async function renderLeaderboard() {
+            let { data } = await sb.from('leaderboard').select('*').limit(50);
+            let cont = document.getElementById('lb-container');
+            if (!data || !data.length) { cont.innerHTML = '<div class="empty">Zatím žádní hráči</div>'; return; }
+            let myId = currentUser?.id;
+            let html = `<div class="lb-card">
+                <div class="lb-header">
+                    <div><div class="lb-title">LEADERBOARD</div><div class="lb-subtitle">${data.length} traders · live</div></div>
+                </div>
+                <div class="lb-col-header-row">
+                    <div class="lb-col-header">#</div>
+                    <div class="lb-col-header">TRADER</div>
+                    <div class="lb-col-header" style="text-align:right">BALANCE</div>
+                    <div class="lb-col-header" style="text-align:right">SÁZKY</div>
+                    <div class="lb-col-header" style="text-align:right">P&L</div>
+                </div>`;
+            data.forEach((e, i) => {
+                let rank = i + 1;
+                let pnl = Number(e.pnl || 0);
+                let rankCls = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
+                let isMe = e.id === myId;
+                html += `<div class="lb-row${isMe ? ' me' : ''}">
+                    <div class="lb-rank ${rankCls}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</div>
+                    <div class="lb-name">${e.username}${isMe ? '<span class="you-tag">YOU</span>' : ''}</div>
+                    <div class="lb-col">$${Number(e.balance || 0).toFixed(2)}</div>
+                    <div class="lb-col">${e.total_bets || 0}</div>
+                    <div class="lb-col ${pnl >= 0 ? 'pos' : 'neg'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</div>
+                </div>`;
+            });
+            html += '</div>';
+            cont.innerHTML = html;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // CHAT
+        // ═══════════════════════════════════════════════════
+        async function loadChat(marketId) {
+            let { data } = await sb.from('chat_messages').select('*').eq('market_id', marketId).order('created_at', { ascending: false }).limit(15);
+            return (data || []).reverse();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // REALTIME
+        // ═══════════════════════════════════════════════════
+        function setupRealtime() {
+            sb.channel('public:markets')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, async () => {
+                    await loadMarkets();
+                }).subscribe();
+
+            sb.channel('public:chat')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+                    let msg = payload.new;
+                    let ce = document.getElementById('chat-' + msg.market_id);
+                    if (ce) {
+                        let d = document.createElement('div');
+                        d.className = 'chat-msg';
+                        d.innerHTML = `<span class="cn" style="color:${msg.user_color || 'var(--text)'}">${msg.user_name}</span><span class="ct">${msg.message}</span>`;
+                        ce.appendChild(d);
+                        while (ce.children.length > 14) ce.removeChild(ce.firstChild);
+                        ce.scrollTop = ce.scrollHeight;
+                    }
+                }).subscribe();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // AMOUNT
+        // ═══════════════════════════════════════════════════
+        function getAmt(id) {
+            let custom = document.getElementById('custom-' + id);
+            if (custom && custom.value && Number(custom.value) > 0) return Number(custom.value);
+            return selectedAmt[id] || 10;
+        }
+        window.setAmt = function (id, v) {
+            selectedAmt[id] = v;
+            document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.toggle('active', Number(b.dataset.v) === v));
+            let ci = document.getElementById('custom-' + id); if (ci) ci.value = '';
+            updateBetBtns(id, v);
+        };
+        window.customAmtChange = function (id) {
+            let ci = document.getElementById('custom-' + id);
+            let v = Number(ci.value);
+            if (v > 0) {
+                document.querySelectorAll(`.amt-row-${id} .amt-btn`).forEach(b => b.classList.remove('active'));
+                updateBetBtns(id, v);
+            }
+        };
+        function updateBetBtns(id, v) {
+            let by = document.getElementById(`btn-yes-${id}`); if (by) by.textContent = `↑ YES $${v}`;
+            let bn = document.getElementById(`btn-no-${id}`); if (bn) bn.textContent = `↓ NO $${v}`;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // CHART
+        // ═══════════════════════════════════════════════════
+        function draw(canvas, rawHist, period) {
+            let hist = getHistSlice(rawHist, period || 'all');
+            let data = hist.map(h => typeof h === 'object' ? h : { p: h, yes: null, no: null, t: null });
+            if (!data || data.length < 2) return;
+            let dpr = window.devicePixelRatio || 1, w = canvas.offsetWidth || 300, h = 100;
+            canvas.width = w * dpr; canvas.height = h * dpr;
+            let ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, w, h);
+            let toY = v => h - (v * h * .82 + h * .08);
+            let step = w / (data.length - 1);
+            let gradY = ctx.createLinearGradient(0, 0, 0, h);
+            gradY.addColorStop(0, 'rgba(0,217,100,.18)'); gradY.addColorStop(1, 'rgba(0,217,100,0)');
+            ctx.beginPath();
+            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(d.p)) : ctx.moveTo(0, toY(d.p)));
+            ctx.strokeStyle = '#00d964'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+            ctx.fillStyle = gradY; ctx.fill();
+            ctx.beginPath();
+            data.forEach((d, i) => i ? ctx.lineTo(i * step, toY(1 - d.p)) : ctx.moveTo(0, toY(1 - d.p)));
+            ctx.strokeStyle = '#ff4466'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, toY(.5)); ctx.lineTo(w, toY(.5)); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(0,217,100,.8)'; ctx.font = "9px 'Space Mono',monospace";
+            ctx.fillText('YES', (data.length - 1) * step - 24, toY(data[data.length - 1].p) - 5);
+            ctx.fillStyle = 'rgba(255,68,102,.8)';
+            ctx.fillText('NO', (data.length - 1) * step - 20, toY(1 - data[data.length - 1].p) + 12);
+            canvas._chartData = data; canvas._step = step; canvas._toY = toY;
+        }
+        function getHistSlice(hist, period) {
+            if (!hist || !hist.length) return hist || [];
+            if (period === 'all') return hist;
+            let now = Date.now();
+            let cutoffs = { h: 3600000, d: 86400000, w: 604800000, m: 2592000000 };
+            let cut = cutoffs[period] || 0;
+            let filtered = hist.filter(p => typeof p === 'object' && (now - (p.t || 0)) <= cut);
+            return filtered.length > 1 ? filtered : hist;
+        }
+        function attachTooltip(canvas) {
+            if (canvas._ttAttached) return; canvas._ttAttached = true;
+            let wrap = canvas.parentElement;
+            let tt = wrap.querySelector('.chart-tooltip'); if (!tt) return;
+            canvas.addEventListener('mousemove', e => {
+                let data = canvas._chartData, step = canvas._step; if (!data || !step) return;
+                let rect = canvas.getBoundingClientRect(), x = e.clientX - rect.left;
+                let idx = Math.min(Math.round(x / step), data.length - 1), d = data[idx]; if (!d) return;
+                tt.style.display = 'block';
+                tt.style.left = Math.min(Math.max(idx * step, 50), rect.width - 50) + 'px'; tt.style.top = '4px';
+                let timeStr = d.t ? new Date(d.t).toLocaleTimeString('cs', { hour: '2-digit', minute: '2-digit' }) : '—';
+                tt.innerHTML = `<div class="tt-time">${timeStr}</div><div class="tt-yes">YES ${(d.p * 100).toFixed(1)}%${d.yes != null ? ' ($' + Number(d.yes).toFixed(1) + ')' : ''}</div><div class="tt-no">NO ${((1 - d.p) * 100).toFixed(1)}%${d.no != null ? ' ($' + Number(d.no).toFixed(1) + ')' : ''}</div>`;
+            });
+            canvas.addEventListener('mouseleave', () => { tt.style.display = 'none'; });
+        }
+
+        window.setPeriod = function (id, p) {
+            selectedPeriod[id] = p;
+            document.querySelectorAll(`.period-row-${id} .period-btn`).forEach(b => b.classList.toggle('active', b.dataset.p === p));
+            let m = markets.find(x => x.id == id); if (!m) return;
+            let c = document.getElementById('c-' + id);
+            if (c && c._hist) draw(c, c._hist, p);
+        };
+
+        // ═══════════════════════════════════════════════════
+        // DEADLINE
+        // ═══════════════════════════════════════════════════
+        function deadlineStr(deadline) {
+            if (!deadline) return null;
+            let diff = new Date(deadline) - new Date();
+            if (diff <= 0) return { text: '⏱ SÁZENÍ UZAVŘENO', cls: 'deadline-urgent' };
+            let h = Math.floor(diff / 3600000), mn = Math.floor((diff % 3600000) / 60000), d = Math.floor(diff / 86400000);
+            if (d > 1) return { text: `⏱ ${d}d ${h % 24}h left`, cls: '' };
+            if (h > 0) return { text: `⏱ ${h}h ${mn}m left`, cls: h < 6 ? 'deadline-soon' : '' };
+            return { text: `⏱ ${mn}m left`, cls: 'deadline-urgent' };
+        }
+
+        // ═══════════════════════════════════════════════════
+        // TICKER
+        // ═══════════════════════════════════════════════════
+        function updateTicker() {
+            let parts = markets.filter(m => !m.closed).map(m => `${m.question.substring(0, 26)}…  ${((m.prob || .5) * 100).toFixed(1)}%`);
+            document.getElementById('ticker').textContent = parts.length ? '⬤ LIVE  —  ' + parts.join('   ·   ') : '⬤ LIVE — žádné aktivní trhy';
+        }
+
+        function notify(msg) {
+            let el = document.getElementById('notif');
+            el.textContent = msg; el.classList.add('show');
+            clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // BUILD CARD
+        // ═══════════════════════════════════════════════════
+        function buildCard(m) {
+            let p = m.prob != null ? m.prob : 0.5;
+            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1);
+            let vol = ((m.yes_pool || 0) + (m.no_pool || 0)).toFixed(0);
+            let pos = myBets[m.id] || { yes: 0, no: 0, yesInvested: 0, noInvested: 0 };
+            let hasPos = (pos.yes || 0) > 0.001 || (pos.no || 0) > 0.001;
+            let curAmt = selectedAmt[m.id] || 10;
+            let dl = deadlineStr(m.deadline);
+            let isExpired = m.deadline && new Date(m.deadline) < new Date();
+            let isBettingLocked = m.closed || isExpired;
+            let periods = ['h', 'd', 'w', 'm', 'all'];
+            let periodLabels = { h: '1H', d: '1D', w: '1W', m: '1M', all: 'ALL' };
+            let curPeriod = selectedPeriod[m.id] || 'all';
+            let div = document.createElement('div');
+            div.className = 'card'; div.id = 'card-' + m.id;
+            div.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">${m.question}${m.closed ? `<span class="closed-badge ${m.result === 'yes' ? 'badge-yes' : 'badge-no'}">✓ ${(m.result || '').toUpperCase()}</span>` : ''}</div>
+                    ${m.creator_name ? `<div class="card-creator">👤 Vytvořil: ${m.creator_name}</div>` : ''}
+                    ${dl ? `<div class="card-deadline ${dl.cls}" id="dl-${m.id}">${dl.text}</div>` : ''}
+                    ${isExpired && !m.closed ? `<div class="locked-banner">🔒 Deadline vypršel — sázení je uzavřeno. Čeká se na výsledek.</div>` : ''}
+                    <div class="prob-row">
+                        <div>
+                            <div class="prob-big" id="pbig-${m.id}">${pYes}%</div>
+                            <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">YES probability</div>
+                        </div>
+                        <div class="prob-sides">
+                            <div class="py" id="pyes-${m.id}">YES ${pYes}%</div>
+                            <div class="pn" id="pno-${m.id}">NO ${pNo}%</div>
+                        </div>
+                    </div>
+                    <div class="bar-wrap"><div class="bar-fill" id="bar-${m.id}" style="width:${pYes}%"></div></div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-item">VOL <span class="v" id="vol-${m.id}">$${Number(vol).toLocaleString()}</span></div>
+                    <div class="vol-item">YES <span class="v" id="yp-${m.id}">$${p.toFixed(3)}</span></div>
+                    <div class="vol-item">NO <span class="v" id="np-${m.id}">$${(1 - p).toFixed(3)}</span></div>
+                </div>
+                <div class="period-row period-row-${m.id}">
+                    ${periods.map(pp => `<button class="period-btn${pp === curPeriod ? ' active' : ''}" data-p="${pp}" onclick="setPeriod(${m.id},'${pp}')">${periodLabels[pp]}</button>`).join('')}
+                </div>
+                <div class="chart-wrap">
+                    <div class="chart-container">
+                        <canvas id="c-${m.id}" class="main-chart"></canvas>
+                        <div class="chart-tooltip" id="tt-${m.id}"></div>
+                    </div>
+                </div>
+                ${hasPos ? `<div id="mypos-${m.id}" class="my-pos">
+                    <div class="pos-title">Moje pozice</div>
+                    <div class="pos-grid">
+                        <div class="pos-item"><div class="pi-label">INVESTOVÁNO YES</div><div class="pi-val pi-yes" id="myyes-inv-${m.id}">$${(pos.yesInvested || 0).toFixed(2)}</div></div>
+                        <div class="pos-item"><div class="pi-label">INVESTOVÁNO NO</div><div class="pi-val pi-no" id="myno-inv-${m.id}">$${(pos.noInvested || 0).toFixed(2)}</div></div>
+                        <div class="pos-item"><div class="pi-label">YES SHARES</div><div class="pi-val pi-shares" id="myes-${m.id}">${(pos.yes || 0).toFixed(3)}</div></div>
+                        <div class="pos-item"><div class="pi-label">NO SHARES</div><div class="pi-val pi-no" id="mno-${m.id}">${(pos.no || 0).toFixed(3)}</div></div>
+                    </div>
+                </div>` : `<div id="mypos-${m.id}" style="display:none"></div>`}
+                ${!isBettingLocked ? `
+                <div class="amount-row amt-row-${m.id}">
+                    ${AMOUNTS.map(a => `<button class="amt-btn${a === curAmt ? ' active' : ''}" data-v="${a}" onclick="setAmt(${m.id},${a})">$${a}</button>`).join('')}
+                    <div class="custom-amt-wrap">
+                        <span class="custom-lbl">$</span>
+                        <input class="custom-amt-input" id="custom-${m.id}" type="number" min="1" placeholder="vlastní" oninput="customAmtChange(${m.id})">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-yes" id="btn-yes-${m.id}" onclick="bet(${m.id},'yes')">↑ YES $${curAmt}</button>
+                    <button class="btn btn-no" id="btn-no-${m.id}" onclick="bet(${m.id},'no')">↓ NO $${curAmt}</button>
+                </div>` : ''}
+                <div class="chat-wrap">
+                    <div class="chat-label">⬤ live chat</div>
+                    <div class="chat-msgs" id="chat-${m.id}"></div>
+                </div>`;
+            return div;
+        }
+
+        function updateCard(m) {
+            let p = m.prob != null ? m.prob : 0.5;
+            let pYes = (p * 100).toFixed(1), pNo = ((1 - p) * 100).toFixed(1);
+            let vol = (m.yes_pool || 0) + (m.no_pool || 0);
+            let set = (id, v) => { let e = document.getElementById(id); if (e) e.textContent = v; };
+            set(`pbig-${m.id}`, pYes + '%');
+            set(`pyes-${m.id}`, 'YES ' + pYes + '%');
+            set(`pno-${m.id}`, 'NO ' + pNo + '%');
+            set(`vol-${m.id}`, '$' + vol.toFixed(0));
+            set(`yp-${m.id}`, '$' + p.toFixed(3));
+            set(`np-${m.id}`, '$' + (1 - p).toFixed(3));
+            let bar = document.getElementById(`bar-${m.id}`); if (bar) bar.style.width = pYes + '%';
+            let dl = deadlineStr(m.deadline);
+            let dlEl = document.getElementById(`dl-${m.id}`);
+            if (dlEl && dl) { dlEl.textContent = dl.text; dlEl.className = 'card-deadline ' + dl.cls; }
+            let pos = myBets[m.id] || {};
+            let hasPos = (pos.yes || 0) > 0.001 || (pos.no || 0) > 0.001;
+            let pe = document.getElementById(`mypos-${m.id}`);
+            if (pe && hasPos) {
+                pe.style.display = ''; pe.className = 'my-pos';
+                set(`myes-${m.id}`, (pos.yes || 0).toFixed(3));
+                set(`mno-${m.id}`, (pos.no || 0).toFixed(3));
+                set(`myyes-inv-${m.id}`, '$' + (pos.yesInvested || 0).toFixed(2));
+                set(`myno-inv-${m.id}`, '$' + (pos.noInvested || 0).toFixed(2));
+            }
+        }
+
+        async function fullRender() {
+            let container = document.getElementById('markets');
+            let sorted = [...markets];
+            let newIds = sorted.map(m => String(m.id));
+            renderedIds.forEach(id => {
+                if (!newIds.includes(id)) { let el = document.getElementById('card-' + id); if (el) el.remove(); }
+            });
+            for (let i = 0; i < sorted.length; i++) {
+                let m = sorted[i];
+                let existing = document.getElementById('card-' + m.id);
+                if (!existing) {
+                    let card = buildCard(m);
+                    let ref = container.children[i];
+                    ref ? container.insertBefore(card, ref) : container.appendChild(card);
+                    // Load and draw chart history
+                    loadHistory(m.id).then(hist => {
+                        let c = document.getElementById('c-' + m.id);
+                        if (c) { c._hist = hist; draw(c, hist, selectedPeriod[m.id] || 'all'); attachTooltip(c); }
+                    });
+                    // Load chat
+                    loadChat(m.id).then(msgs => {
+                        let ce = document.getElementById('chat-' + m.id);
+                        if (ce) {
+                            msgs.forEach(msg => {
+                                let d = document.createElement('div');
+                                d.className = 'chat-msg';
+                                d.innerHTML = `<span class="cn" style="color:${msg.user_color || 'var(--text)'}">${msg.user_name}</span><span class="ct">${msg.message}</span>`;
+                                ce.appendChild(d);
+                            });
+                            ce.scrollTop = ce.scrollHeight;
+                        }
+                    });
+                } else {
+                    updateCard(m);
+                }
+            }
+            if (!markets.length) container.innerHTML = '<div class="empty">⬤ žádné aktivní trhy</div>';
+            renderedIds = newIds;
+            updateTicker();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // TABS / MODALS / HELPERS
+        // ═══════════════════════════════════════════════════
+        function switchTab(t) {
+            document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', ['markets', 'mymarkets', 'leaderboard', 'earn'][i] === t));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + t).classList.add('active');
+            if (t === 'leaderboard') renderLeaderboard();
+            if (t === 'mymarkets') renderMyMarkets();
+            if (t === 'earn' && !currentMath) loadMath();
+        }
+        function openPayModal() { document.getElementById('pay-modal').classList.add('open') }
+        function openCreateMarket() { document.getElementById('create-market-modal').classList.add('open') }
+        function closeModal(id) { document.getElementById(id).classList.remove('open') }
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open') });
+        });
+        function selTopup(v) {
+            topupAmount = v;
+            document.querySelectorAll('.amt-pill').forEach(el => el.classList.toggle('sel', Number(el.dataset.v) === v));
+            document.getElementById('topup-custom').value = '';
+        }
+        function selTopupCustom() {
+            let v = Number(document.getElementById('topup-custom').value);
+            if (v > 0) { topupAmount = v; document.querySelectorAll('.amt-pill').forEach(el => el.classList.remove('sel')); }
+        }
+        function formatCard(inp) {
+            let v = inp.value.replace(/\D/g, '').substring(0, 16);
+            inp.value = v.replace(/(\d{4})/g, '$1 ').trim();
+        }
+        function formatExp(inp) {
+            let v = inp.value.replace(/\D/g, '');
+            if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2);
+            inp.value = v;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════
+        // EARN / MATH
+        // ═══════════════════════════════════════════════════
+        let mathCorrect = 0, mathWrong = 0, mathEarned = 0;
+        let currentMath = null;
+
+        function genMath() {
+            let types = ['add', 'sub', 'mul', 'div', 'pct', 'sqrt', 'pow'];
+            let difficulty = Math.min(Math.floor((mathCorrect) / 3), 4); // gets harder
+            let type = types[Math.floor(Math.random() * Math.min(3 + difficulty, types.length))];
+            let a, b, ans, q;
+            if (type === 'add') {
+                a = Math.floor(Math.random() * (50 * (difficulty + 1))) + 1;
+                b = Math.floor(Math.random() * (50 * (difficulty + 1))) + 1;
+                ans = a + b; q = `${a} + ${b} = ?`;
+            } else if (type === 'sub') {
+                a = Math.floor(Math.random() * 200) + 50;
+                b = Math.floor(Math.random() * a) + 1;
+                ans = a - b; q = `${a} − ${b} = ?`;
+            } else if (type === 'mul') {
+                a = Math.floor(Math.random() * (8 + difficulty * 4)) + 2;
+                b = Math.floor(Math.random() * (8 + difficulty * 4)) + 2;
+                ans = a * b; q = `${a} × ${b} = ?`;
+            } else if (type === 'div') {
+                b = Math.floor(Math.random() * 11) + 2;
+                ans = Math.floor(Math.random() * 20) + 1;
+                a = b * ans; q = `${a} ÷ ${b} = ?`;
+            } else if (type === 'pct') {
+                let pcts = [10, 20, 25, 50, 5, 15];
+                let pct = pcts[Math.floor(Math.random() * pcts.length)];
+                a = (Math.floor(Math.random() * 19) + 1) * 4;
+                ans = Math.round(a * pct / 100);
+                q = `${pct}% z ${a} = ?`;
+            } else if (type === 'sqrt') {
+                let bases = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169];
+                let base = bases[Math.floor(Math.random() * bases.length)];
+                ans = Math.sqrt(base); q = `√${base} = ?`;
+            } else {
+                a = Math.floor(Math.random() * 8) + 2;
+                b = Math.floor(Math.random() * 3) + 2;
+                ans = Math.pow(a, b); q = `${a}^${b} = ?`;
+            }
+            return { q, ans: Math.round(ans * 100) / 100 };
+        }
+
+        function loadMath() {
+            currentMath = genMath();
+            document.getElementById('math-question').textContent = currentMath.q;
+            document.getElementById('math-answer').value = '';
+            document.getElementById('math-feedback').textContent = '';
+            document.getElementById('math-feedback').style.color = '';
+            document.getElementById('math-answer').focus();
+        }
+
+        async function checkMath() {
+            if (!currentMath) return;
+            let inp = document.getElementById('math-answer').value.trim();
+            if (inp === '') return;
+            let userAns = parseFloat(inp);
+            let fb = document.getElementById('math-feedback');
+            if (Math.abs(userAns - currentMath.ans) < 0.01) {
+                mathCorrect++;
+                mathEarned += 100;
+                document.getElementById('math-correct').textContent = mathCorrect;
+                document.getElementById('math-earned').textContent = '$' + mathEarned;
+                fb.textContent = '✓ Správně! +$100';
+                fb.style.color = 'var(--green)';
+                // Add to balance in Supabase
+                if (currentProfile) {
+                    let newBal = Number(currentProfile.balance) + 100;
+                    await sb.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+                    currentProfile.balance = newBal;
+                    document.getElementById('bal').textContent = newBal.toFixed(2);
+                }
+                setTimeout(loadMath, 900);
+            } else {
+                mathWrong++;
+                document.getElementById('math-wrong').textContent = mathWrong;
+                fb.textContent = `✗ Špatně! Správně bylo: ${currentMath.ans}`;
+                fb.style.color = 'var(--red)';
+                setTimeout(loadMath, 1400);
+            }
+        }
+
+        function skipMath() {
+            document.getElementById('math-feedback').textContent = `Přeskočeno (${currentMath.ans})`;
+            document.getElementById('math-feedback').style.color = 'var(--muted)';
+            setTimeout(loadMath, 800);
+        }
+
+        function openMoneyModal() { switchTab('earn'); }
+
+        // Enter key for math
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && document.getElementById('tab-earn').classList.contains('active')) {
+                checkMath();
+            }
+        });
+
+        // Obnov session po refreshi
+        async function initAuth() {
+            let { data: { session } } = await sb.auth.getSession();
+            if (session?.user) {
+                currentUser = session.user;
+                document.getElementById('auth-overlay').style.display = 'none';
+                await loadProfile();
+                await loadMyBets();
+                await loadMarkets();
+                setupRealtime();
+                return;
+            }
+            // Fallback: auto re-login z sessionStorage
+            let email = sessionStorage.getItem('px_email');
+            let pass = sessionStorage.getItem('px_pass');
+            if (email && pass) {
+                let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+                if (!error && data.user) {
+                    currentUser = data.user;
+                    document.getElementById('auth-overlay').style.display = 'none';
+                    await loadProfile();
+                    await loadMyBets();
+                    await loadMarkets();
+                    setupRealtime();
+                }
+            }
+        }
+        initAuth();
+
+        // Sleduj login/logout
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+                currentUser = session.user;
+                document.getElementById('auth-overlay').style.display = 'none';
+                await loadProfile();
+                await loadMyBets();
+                await loadMarkets();
+                setupRealtime();
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null; currentProfile = null;
+                markets = []; renderedIds = [];
+                document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('markets').innerHTML = '';
+            }
+        });
+
+        // Enter key support in auth forms
+        document.getElementById('a-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+        document.getElementById('r-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>PredictX — Market</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <style>
         * {
             box-sizing: border-box;
