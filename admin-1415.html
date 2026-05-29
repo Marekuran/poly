@@ -42,7 +42,7 @@
             z-index: 999;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center
         }
 
         .login-box {
@@ -51,7 +51,7 @@
             border-radius: 20px;
             padding: 40px;
             width: 340px;
-            box-shadow: 0 0 60px rgba(255,68,102,.08);
+            box-shadow: 0 0 60px rgba(255,68,102,.08)
         }
 
         .login-logo {
@@ -150,7 +150,7 @@
             justify-content: space-between;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 10
         }
 
         .logo {
@@ -174,7 +174,7 @@
             border: 1px solid var(--red);
             color: var(--red);
             padding: 3px 10px;
-            border-radius: 20px;
+            border-radius: 20px
         }
 
         .logout-btn {
@@ -200,7 +200,7 @@
             padding: 24px 16px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 16px
         }
 
         @media(max-width:600px) {
@@ -226,7 +226,7 @@
             color: var(--muted);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-between
         }
 
             .panel-header .count {
@@ -235,7 +235,7 @@
                 border-radius: 20px;
                 padding: 2px 10px;
                 font-size: 10px;
-                color: var(--text);
+                color: var(--text)
             }
 
         .panel-body {
@@ -574,7 +574,7 @@
             border: 1px solid var(--yellow);
             padding: 2px 8px;
             border-radius: 20px;
-            margin-left: 6px;
+            margin-left: 6px
         }
 
         .loading {
@@ -588,20 +588,13 @@
 </head>
 <body>
 
-    <!-- LOGIN -->
     <div id="login-overlay">
         <div class="login-box">
             <div class="login-logo">⬤ PREDICTX</div>
             <div class="login-title">Admin Panel</div>
             <div class="login-sub">Přístup pouze pro administrátory</div>
-            <div class="login-field">
-                <label>Email (admin účet)</label>
-                <input id="login-email" type="email" placeholder="admin@predictx.com" autocomplete="username">
-            </div>
-            <div class="login-field">
-                <label>Heslo</label>
-                <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
-            </div>
+            <div class="login-field"><label>Email (admin účet)</label><input id="login-email" type="email" placeholder="admin@predictx.com" autocomplete="username"></div>
+            <div class="login-field"><label>Heslo</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
             <button class="login-btn" id="login-btn" onclick="doLogin()">Přihlásit se →</button>
             <div class="login-err" id="login-err"></div>
         </div>
@@ -619,27 +612,13 @@
         <div class="panel">
             <div class="panel-header">Vytvořit trh</div>
             <div class="panel-body">
-                <div class="field">
-                    <label>Otázka</label>
-                    <textarea id="q" placeholder="Např: Bude Bitcoin nad $100k do konce roku?"></textarea>
-                </div>
-                <div class="field">
-                    <label>Deadline (uzávěrka)</label>
-                    <input id="deadline" type="datetime-local">
-                    <div class="deadline-hint">Nechte prázdné = bez deadline</div>
-                </div>
-                <div class="field">
-                    <label>Počáteční likvidita YES ($)</label>
-                    <input id="startYes" type="number" value="50" min="0">
-                </div>
-                <div class="field">
-                    <label>Počáteční likvidita NO ($)</label>
-                    <input id="startNo" type="number" value="50" min="0">
-                </div>
+                <div class="field"><label>Otázka</label><textarea id="q" placeholder="Např: Bude Bitcoin nad $100k do konce roku?"></textarea></div>
+                <div class="field"><label>Deadline (uzávěrka)</label><input id="deadline" type="datetime-local"><div class="deadline-hint">Nechte prázdné = bez deadline</div></div>
+                <div class="field"><label>Počáteční likvidita YES ($)</label><input id="startYes" type="number" value="50" min="0"></div>
+                <div class="field"><label>Počáteční likvidita NO ($)</label><input id="startNo" type="number" value="50" min="0"></div>
                 <button class="btn btn-primary" id="create-btn" onclick="createMarket()">+ Vytvořit trh</button>
             </div>
         </div>
-
         <div class="panel">
             <div class="panel-header">Přehled</div>
             <div class="panel-body">
@@ -651,7 +630,6 @@
                 </div>
             </div>
         </div>
-
         <div class="panel full">
             <div class="panel-header">Trhy <span class="count" id="market-count">0</span></div>
             <div class="panel-body" id="list"><div class="empty-state">Přihlašte se pro zobrazení trhů</div></div>
@@ -661,66 +639,36 @@
     <div class="notif" id="notif"></div>
 
     <script>
-        // ═══════════════════════════════════════════════════
-        // SUPABASE
-        // ═══════════════════════════════════════════════════
         const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkanloYXdxYWdhcXp4cnJ4a2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODAxOTQsImV4cCI6MjA5NDM1NjE5NH0.pHBFtJgq6JPd7QLmeRHeFqrS6rfnVQ-VAojhEduq3qU';
+
+        // ── FIX: lock bypass prevents Web Locks deadlock on refresh ──
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
                 detectSessionInUrl: false,
-                storageKey: 'sb-tdjyhawqagaqzxrrxkke-auth-token'
+                storageKey: 'sb-tdjyhawqagaqzxrrxkke-auth-token',
+                lock: (name, acquireTimeout, fn) => fn()
             }
         });
 
-        let currentUser = null;
-        let currentProfile = null;
-        let markets = [];
+        let currentUser = null, currentProfile = null, markets = [];
 
-        // ═══════════════════════════════════════════════════
-        // AUTH — admin se přihlásí přes Supabase Auth
-        // username = 'admin' v profiles tabulce = admin přístup
-        // ═══════════════════════════════════════════════════
         async function doLogin() {
-            let email = document.getElementById('login-email').value.trim();
-            let pass = document.getElementById('login-pass').value;
+            let email = document.getElementById('login-email').value.trim(), pass = document.getElementById('login-pass').value;
             if (!email || !pass) { showErr('Vyplň email a heslo'); return; }
             let btn = document.getElementById('login-btn');
             btn.disabled = true; btn.textContent = 'Přihlašuji...';
-
             let { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-            console.log('AUTH RESULT:', data, error);
-            if (error) {
-                showErr('❌ ' + error.message);
-                btn.disabled = false; btn.textContent = 'Přihlásit se →';
-                return;
-            }
-
-            // Verify admin role
-            console.log('Fetching profile for:', data.user.id);
+            if (error) { showErr('❌ ' + error.message); btn.disabled = false; btn.textContent = 'Přihlásit se →'; return; }
             let { data: profile, error: profErr } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
-            console.log('PROFILE RESULT:', profile, profErr);
-            if (profErr) {
-                showErr('❌ Chyba profilu: ' + profErr.message);
-                await sb.auth.signOut();
-                btn.disabled = false; btn.textContent = 'Přihlásit se →';
-                return;
-            }
-            if (!profile || profile.username !== 'admin') {
-                await sb.auth.signOut();
-                showErr('❌ Username není "admin", je: ' + (profile?.username || 'nenalezen'));
-                btn.disabled = false; btn.textContent = 'Přihlásit se →';
-                return;
-            }
-
-            currentUser = data.user;
-            currentProfile = profile;
+            if (profErr) { showErr('❌ Chyba profilu: ' + profErr.message); await sb.auth.signOut(); btn.disabled = false; btn.textContent = 'Přihlásit se →'; return; }
+            if (!profile || profile.username !== 'admin') { await sb.auth.signOut(); showErr('❌ Přístup odepřen (username není admin)'); btn.disabled = false; btn.textContent = 'Přihlásit se →'; return; }
+            currentUser = data.user; currentProfile = profile;
             document.getElementById('login-overlay').style.display = 'none';
             btn.disabled = false; btn.textContent = 'Přihlásit se →';
-            await loadAndRender();
-            setupRealtime();
+            await loadAndRender(); setupRealtime();
         }
 
         document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -733,111 +681,79 @@
             document.getElementById('list').innerHTML = '<div class="empty-state">Přihlašte se pro zobrazení trhů</div>';
         }
 
-        function showErr(msg) {
-            let el = document.getElementById('login-err');
-            el.textContent = msg; el.style.display = 'block';
+        function showErr(msg) { let el = document.getElementById('login-err'); el.textContent = msg; el.style.display = 'block'; }
+
+        // ── FIX: same _sessionBooted guard as index.html ──
+        let _sessionBooted = false;
+
+        async function _bootAdmin(user) {
+            if (_sessionBooted) return;
+            _sessionBooted = true;
+            let { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+            if (profile && profile.username === 'admin') {
+                currentUser = user; currentProfile = profile;
+                document.getElementById('login-overlay').style.display = 'none';
+                await loadAndRender(); setupRealtime();
+            } else {
+                _sessionBooted = false;
+                await sb.auth.signOut();
+            }
         }
 
-        // ═══════════════════════════════════════════════════
-        // CHECK SESSION ON LOAD (obnoví session po refreshi)
-        // ═══════════════════════════════════════════════════
         async function initAdminAuth() {
             let { data: { session } } = await sb.auth.getSession();
-            if (session?.user) {
-                let { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-                if (profile && profile.username === 'admin') {
-                    currentUser = session.user;
-                    currentProfile = profile;
-                    document.getElementById('login-overlay').style.display = 'none';
-                    await loadAndRender();
-                    setupRealtime();
-                } else {
-                    await sb.auth.signOut();
-                }
-            }
+            if (session?.user) await _bootAdmin(session.user);
         }
         initAdminAuth();
 
         sb.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') {
+            if (event === 'SIGNED_IN' && session?.user) {
+                await _bootAdmin(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                _sessionBooted = false;
                 currentUser = null; currentProfile = null;
                 document.getElementById('login-overlay').style.display = 'flex';
             }
         });
 
-        // ═══════════════════════════════════════════════════
-        // MARKETS
-        // ═══════════════════════════════════════════════════
         async function loadAndRender() {
             document.getElementById('list').innerHTML = '<div class="loading">⏳ Načítám trhy...</div>';
             let { data, error } = await sb.from('markets').select('*, profiles(username)').order('created_at', { ascending: false });
             if (error) { notify('❌ Chyba: ' + error.message, true); return; }
-            markets = data || [];
-            render();
+            markets = data || []; render();
         }
 
         async function createMarket() {
             if (!currentUser) return;
-            let q = document.getElementById('q').value.trim();
-            if (!q) { notify('Zadej otázku!', true); return; }
-            let sy = Number(document.getElementById('startYes').value) || 50;
-            let sn = Number(document.getElementById('startNo').value) || 50;
-            let dlVal = document.getElementById('deadline').value;
-            let deadline = dlVal ? new Date(dlVal).toISOString() : null;
-            let btn = document.getElementById('create-btn');
-            btn.disabled = true; btn.textContent = '⏳ Vytvářím...';
-            let { error } = await sb.from('markets').insert({
-                question: q, yes_pool: sy, no_pool: sn,
-                prob: sy / (sy + sn), deadline, is_admin_market: true,
-                creator_id: currentUser.id, creator_name: 'admin'
-            });
+            let q = document.getElementById('q').value.trim(); if (!q) { notify('Zadej otázku!', true); return; }
+            let sy = Number(document.getElementById('startYes').value) || 50, sn = Number(document.getElementById('startNo').value) || 50;
+            let dlVal = document.getElementById('deadline').value, deadline = dlVal ? new Date(dlVal).toISOString() : null;
+            let btn = document.getElementById('create-btn'); btn.disabled = true; btn.textContent = '⏳ Vytvářím...';
+            let { error } = await sb.from('markets').insert({ question: q, yes_pool: sy, no_pool: sn, prob: sy / (sy + sn), deadline, is_admin_market: true, creator_id: currentUser.id, creator_name: 'admin' });
             if (error) { notify('❌ ' + error.message, true); }
-            else {
-                document.getElementById('q').value = '';
-                document.getElementById('deadline').value = '';
-                notify('Trh vytvořen! ✓');
-                await loadAndRender();
-            }
+            else { document.getElementById('q').value = ''; document.getElementById('deadline').value = ''; notify('Trh vytvořen! ✓'); await loadAndRender(); }
             btn.disabled = false; btn.textContent = '+ Vytvořit trh';
         }
 
         async function resolveMarket(id, result) {
             let card = document.getElementById('mcard-' + id);
-            if (card) {
-                let btns = card.querySelectorAll('.m-btn');
-                btns.forEach(b => b.disabled = true);
-            }
+            if (card) card.querySelectorAll('.m-btn').forEach(b => b.disabled = true);
             let { error } = await sb.rpc('resolve_market', { p_market_id: id, p_result: result });
-            if (error) {
-                notify('❌ ' + error.message, true);
-                if (card) card.querySelectorAll('.m-btn').forEach(b => b.disabled = false);
-            } else {
-                notify(`Trh uzavřen: ${result.toUpperCase()}`);
-                await loadAndRender();
-            }
+            if (error) { notify('❌ ' + error.message, true); if (card) card.querySelectorAll('.m-btn').forEach(b => b.disabled = false); }
+            else { notify(`Trh uzavřen: ${result.toUpperCase()}`); await loadAndRender(); }
         }
 
         async function deleteMarket(id) {
             if (!confirm('Smazat tento trh? Tato akce je nevratná.')) return;
-            // First delete related bets and history (cascade should handle it via FK, but just in case)
             let { error } = await sb.from('markets').delete().eq('id', id);
             if (error) { notify('❌ ' + error.message, true); }
             else { notify('Trh smazán'); await loadAndRender(); }
         }
 
-        // ═══════════════════════════════════════════════════
-        // REALTIME
-        // ═══════════════════════════════════════════════════
         function setupRealtime() {
-            sb.channel('admin:markets')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, async () => {
-                    await loadAndRender();
-                }).subscribe();
+            sb.channel('admin:markets').on('postgres_changes', { event: '*', schema: 'public', table: 'markets' }, async () => { await loadAndRender(); }).subscribe();
         }
 
-        // ═══════════════════════════════════════════════════
-        // RENDER
-        // ═══════════════════════════════════════════════════
         function dlInfo(deadline) {
             if (!deadline) return null;
             let diff = new Date(deadline) - new Date();
@@ -849,8 +765,7 @@
         }
 
         function render() {
-            let active = markets.filter(m => !m.closed).length;
-            let closed = markets.filter(m => m.closed).length;
+            let active = markets.filter(m => !m.closed).length, closed = markets.filter(m => m.closed).length;
             let vol = markets.reduce((s, m) => s + (m.yes_pool || 0) + (m.no_pool || 0), 0);
             document.getElementById('stat-total').textContent = markets.length;
             document.getElementById('stat-active').textContent = active;
@@ -860,43 +775,36 @@
             let el = document.getElementById('list');
             if (!markets.length) { el.innerHTML = '<div class="empty-state">Zatím žádné trhy</div>'; return; }
             el.innerHTML = markets.map(m => {
-                let t = (m.yes_pool || 0) + (m.no_pool || 0), p = t ? m.yes_pool / t : 0.5;
-                let pYes = (p * 100).toFixed(1);
-                let dl = dlInfo(m.deadline);
-                let isExpired = m.deadline && new Date(m.deadline) < new Date();
+                let t = (m.yes_pool || 0) + (m.no_pool || 0), p = t ? m.yes_pool / t : 0.5, pYes = (p * 100).toFixed(1);
+                let dl = dlInfo(m.deadline), isExpired = m.deadline && new Date(m.deadline) < new Date();
                 let creatorInfo = m.creator_name ? `<div class="m-creator">👤 Vytvořil: ${m.creator_name} · poplatek: $${(m.creator_fee_earned || 0).toFixed(2)}</div>` : '';
                 return `<div class="m-card" id="mcard-${m.id}">
-                <div class="m-q">${m.question}${isExpired && !m.closed ? '<span class="locked-badge">⏱ LOCKED</span>' : ''}</div>
-                ${creatorInfo}
-                ${dl ? `<div class="m-deadline ${dl.cls}">${dl.text}</div>` : ''}
-                <div class="m-stats">
-                    <div class="stat"><div class="label">YES pool</div><div class="val val-yes">$${(m.yes_pool || 0).toFixed(1)}</div></div>
-                    <div class="stat"><div class="label">NO pool</div><div class="val val-no">$${(m.no_pool || 0).toFixed(1)}</div></div>
-                    <div class="stat"><div class="label">Prob</div><div class="val val-yes">${pYes}%</div></div>
-                    <div class="stat"><div class="label">Volume</div><div class="val val-vol">$${t.toFixed(0)}</div></div>
-                </div>
-                <div class="m-bar-wrap"><div class="m-bar-fill" style="width:${pYes}%"></div></div>
-                ${m.closed
+                        <div class="m-q">${m.question}${isExpired && !m.closed ? '<span class="locked-badge">⏱ LOCKED</span>' : ''}</div>
+                        ${creatorInfo}
+                        ${dl ? `<div class="m-deadline ${dl.cls}">${dl.text}</div>` : ''}
+                        <div class="m-stats">
+                            <div class="stat"><div class="label">YES pool</div><div class="val val-yes">$${(m.yes_pool || 0).toFixed(1)}</div></div>
+                            <div class="stat"><div class="label">NO pool</div><div class="val val-no">$${(m.no_pool || 0).toFixed(1)}</div></div>
+                            <div class="stat"><div class="label">Prob</div><div class="val val-yes">${pYes}%</div></div>
+                            <div class="stat"><div class="label">Volume</div><div class="val val-vol">$${t.toFixed(0)}</div></div>
+                        </div>
+                        <div class="m-bar-wrap"><div class="m-bar-fill" style="width:${pYes}%"></div></div>
+                        ${m.closed
                         ? `<span class="closed-badge ${m.result === 'yes' ? 'badge-yes' : 'badge-no'}">✓ UZAVŘENO — ${(m.result || '').toUpperCase()}</span>
-                       <button class="m-btn m-btn-del" style="margin-top:8px;width:100%" onclick="deleteMarket(${m.id})">Smazat</button>`
+                               <button class="m-btn m-btn-del" style="margin-top:8px;width:100%" onclick="deleteMarket(${m.id})">Smazat</button>`
                         : `<div class="m-actions">
-                        <button class="m-btn m-btn-yes" onclick="resolveMarket(${m.id},'yes')">✓ Resolve YES</button>
-                        <button class="m-btn m-btn-no" onclick="resolveMarket(${m.id},'no')">✗ Resolve NO</button>
-                        <button class="m-btn m-btn-del" onclick="deleteMarket(${m.id})">🗑</button>
-                       </div>`
-                    }
-            </div>`;
+                                   <button class="m-btn m-btn-yes" onclick="resolveMarket(${m.id},'yes')">✓ Resolve YES</button>
+                                   <button class="m-btn m-btn-no" onclick="resolveMarket(${m.id},'no')">✗ Resolve NO</button>
+                                   <button class="m-btn m-btn-del" onclick="deleteMarket(${m.id})">🗑</button>
+                               </div>`}
+                    </div>`;
             }).join('');
         }
 
         function notify(msg, isErr) {
             let el = document.getElementById('notif');
-            el.textContent = msg;
-            el.style.background = isErr ? 'var(--red)' : 'var(--green)';
-            el.style.color = isErr ? '#fff' : '#000';
-            el.classList.add('show');
-            clearTimeout(el._t);
-            el._t = setTimeout(() => el.classList.remove('show'), 2500);
+            el.textContent = msg; el.style.background = isErr ? 'var(--red)' : 'var(--green)'; el.style.color = isErr ? '#fff' : '#000';
+            el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2500);
         }
     </script>
 </body>

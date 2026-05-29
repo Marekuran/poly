@@ -1317,7 +1317,7 @@
         const SUPABASE_URL = 'https://tdjyhawqagaqzxrrxkke.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkanloYXdxYWdhcXp4cnJ4a2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODAxOTQsImV4cCI6MjA5NDM1NjE5NH0.pHBFtJgq6JPd7QLmeRHeFqrS6rfnVQ-VAojhEduq3qU';
         window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'sb-tdjyhawqagaqzxrrxkke-auth-token' }
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'sb-tdjyhawqagaqzxrrxkke-auth-token', lock: (name, acquireTimeout, fn) => fn() }
         });
 
         let currentUser = null, currentProfile = null, markets = [], myBets = {};
